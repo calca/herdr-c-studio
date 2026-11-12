@@ -1,6 +1,9 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, layout, settings } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings } from "herdr";
+
+const WIDE_AT = 1500;
+const NARROW_AT = 1400;
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -46,8 +49,16 @@ export default class Tabs extends View {
     localStorage.setItem("panels", JSON.stringify(this.panels));
   }
 
+  autoDock(size) {
+    const wide = this.wide === undefined ? size.width >= WIDE_AT : size.width >= (this.wide ? NARROW_AT : WIDE_AT);
+    if (wide === this.wide) return;
+    this.wide = wide;
+    setShared("dock.pinned", wide);
+    run("layout.resize", { id: "sidebar", px: wide ? 296 : 56 });
+  }
+
   render() {
-    if (shared("dock.pinned") === true) return div().size_full();
+    if (shared("dock.pinned") === true) return div().size_full().on_size_change((size) => this.autoDock(size));
     const t = theme();
     const space = spaces().find(p => p.active);
     const shown = space?.tabs ?? [];
@@ -103,7 +114,10 @@ export default class Tabs extends View {
         }).child(svg(icon).size(14)).when(!compact, el => el.child(label));
     };
     return h_flex().id("studio-tabs").size_full().min_w(0).pr(14).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
-      .on_size_change((size, cx) => { if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size; })
+      .on_size_change((size, cx) => {
+        this.autoDock(size);
+        if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size;
+      })
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
