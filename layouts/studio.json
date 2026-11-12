@@ -14,7 +14,7 @@
   "titlebar": "none",
   "traffic_lights": [
     16,
-    16
+    12
   ],
   "terminal_padding": [
     16,
@@ -28,7 +28,7 @@
         "mod": "studio-tabs"
       },
       "size": {
-        "px": 46
+        "px": 36
       },
       "window_drag": true
     },
@@ -111,7 +111,7 @@
         "mod": "studio-status"
       },
       "size": {
-        "px": 26
+        "px": 36
       }
     }
   ]

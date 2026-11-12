@@ -77,7 +77,7 @@ export default class Tabs extends View {
       const lead = panes().find(p => p.tab === c.id && p.program?.agent) ?? panes().find(p => p.tab === c.id);
       const session = (lead?.program?.agent && lead.title && lead.title !== lead.program.name) ? lead.title : null;
       const name = c.named ? c.name : session ?? program?.name ?? "Terminal";
-      return h_flex().id(`tab-${c.id}`).h(32).px(12).gap(7).rounded(16).items_center().flex_none().text_size(14)
+      return h_flex().id(`tab-${c.id}`).h(28).px(12).gap(7).rounded(14).items_center().flex_none().text_size(13.5)
         // A rename or status dot on this or an earlier tab can push the active one out.
         .when(i <= active, el => el.on_size_change((_size, cx) => { this.scroll.scroll_to_item(active); cx.notify(); }))
         .relative().text_color(c.active ? t.foreground : t.muted)
@@ -98,7 +98,7 @@ export default class Tabs extends View {
     };
     const root = layout(), w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
-    const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 86 : 14;
+    const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [];
@@ -113,7 +113,7 @@ export default class Tabs extends View {
           else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
         }).child(svg(icon).size(14)).when(!compact, el => el.child(label));
     };
-    return h_flex().id("studio-tabs").size_full().min_w(0).pr(14).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
+    return h_flex().id("studio-tabs").size_full().min_w(0).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
       .on_size_change((size, cx) => {
         this.autoDock(size);
         if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size;

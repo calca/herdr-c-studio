@@ -23,7 +23,7 @@ export default class WorkspaceStatus extends View {
     const idle = list.length - working - needs;
     const label = (icon, text) => h_flex().gap(6).items_center().child(svg(`mods/workspace-chrome/${icon}.svg`).size(13)).child(text);
     const pill = (color, text) => h_flex().gap(6).items_center().child(div().size(6).rounded(3).bg(color)).child(div().text_color(color).child(text));
-    return h_flex().size_full().px(18).gap(18).items_center().text_size(11.8).text_color(t.muted)
+    return h_flex().size_full().px(16).gap(18).items_center().text_size(12.5).text_color(t.muted)
       .child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer"))
       .when(Boolean(space?.branch), el => el.child(label("branch", space.branch)))
       .child(div().flex_1())
