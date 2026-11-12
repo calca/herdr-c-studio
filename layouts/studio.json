@@ -80,10 +80,10 @@
             "pane": {
               "header": {
                 "content": {
-                  "mod": "pane"
+                  "mod": "studio-pane"
                 },
                 "reveal": "always",
-                "height": 30,
+                "height": 36,
                 "position": "top"
               },
               "background": "background",

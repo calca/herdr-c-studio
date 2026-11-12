@@ -66,7 +66,7 @@ export default class Tabs extends View {
       const lead = panes().find(p => p.tab === c.id && p.program?.agent) ?? panes().find(p => p.tab === c.id);
       const session = (lead?.program?.agent && lead.title && lead.title !== lead.program.name) ? lead.title : null;
       const name = c.named ? c.name : session ?? program?.name ?? "Terminal";
-      return h_flex().id(`tab-${c.id}`).h(28).px(12).gap(7).rounded(14).items_center().flex_none().text_size(12.8)
+      return h_flex().id(`tab-${c.id}`).h(32).px(12).gap(7).rounded(16).items_center().flex_none().text_size(14)
         // A rename or status dot on this or an earlier tab can push the active one out.
         .when(i <= active, el => el.on_size_change((_size, cx) => { this.scroll.scroll_to_item(active); cx.notify(); }))
         .relative().text_color(c.active ? t.foreground : t.muted)
@@ -78,12 +78,12 @@ export default class Tabs extends View {
           else run("tab.select", { id: c.id });
         })
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
-        .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(14).text_color(t.muted) : image(program.icon).size(14)))
+        .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(16).text_color(t.muted) : image(program.icon).size(16)))
         .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name)))
-        .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(12).flex_none().text_color(t.working).spin(900)))
+        .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
         .when(c.active, el => el.child(div().absolute().bottom(0).left(10).right(10).h(2).rounded(1).bg(t.accent)))
-        .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(12))));
+        .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(13))));
     };
     const root = layout(), w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
