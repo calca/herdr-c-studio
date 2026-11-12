@@ -4,6 +4,8 @@ import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layo
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
+const PANEL_MIN = 1100;
+const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -19,7 +21,9 @@ export default class Tabs extends View {
     this.pressed = null;
     cx.spawn(async (c) => {
       for (;;) {
-        if ((await nextCommand()) === "new") this.newTab();
+        const cmd = await nextCommand();
+        if (cmd === "new") this.newTab();
+        else if (cmd === "files" || cmd === "changes") this.togglePanel(cmd);
         c.notify();
       }
     });
@@ -63,6 +67,33 @@ export default class Tabs extends View {
     localStorage.setItem("panels", JSON.stringify(this.panels));
   }
 
+  togglePanel(id) {
+    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
+    if (!panel) return;
+    if (!panel.hidden && body?.active === id) run("layout.hide", { id: "panel" });
+    else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
+  }
+
+  // Shrinking the window under PANEL_MIN folds the side panel away; opening it there stays allowed.
+  autoPanel(size) {
+    const narrow = size.width < PANEL_MIN;
+    if (narrow && this.narrow === false && find(layout(), "panel")?.hidden === false) run("layout.hide", { id: "panel" });
+    this.narrow = narrow;
+  }
+
+  pills(t) {
+    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
+    if (!panel) return [];
+    return PANELS.map(([id, label, tip]) => {
+      const on = !panel.hidden && body?.active === id;
+      return div().id(`panel-${id}`).size(26).flex().flex_none().items_center().justify_center().rounded(13)
+        .tooltip(tip).text_size(12.5).font_medium().bg(on ? t.selected : t.canvas).text_color(on ? t.foreground : t.muted)
+        .cursor_pointer().hover(s => s.bg(t.hover))
+        .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+        .on_click(() => this.togglePanel(id)).child(label);
+    });
+  }
+
   autoDock(size) {
     const wide = this.wide === undefined ? size.width >= WIDE_AT : size.width >= (this.wide ? NARROW_AT : WIDE_AT);
     if (wide === this.wide) return;
@@ -72,9 +103,15 @@ export default class Tabs extends View {
   }
 
   render() {
-    if (shared("dock.pinned") === true) return div().size_full().on_size_change((size) => this.autoDock(size));
     const t = theme();
     const space = spaces().find(p => p.active);
+    {
+      const root = layout();
+      this.syncPanel(space, find(root, "panel"), find(root, "panel-body"), PANELS.map(([id]) => id));
+    }
+    if (shared("dock.pinned") === true) return h_flex().id("studio-tabs-pinned").size_full().pr(16).gap(4).items_center().justify_end()
+      .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
+      .children(this.pills(t));
     const shown = space?.tabs ?? [];
     const active = shown.findIndex(tab => tab.active);
     const selected = shown[active]?.id;
@@ -114,22 +151,10 @@ export default class Tabs extends View {
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;
-    const panel = find(root, "panel"), body = find(root, "panel-body");
-    const enabled = [];
-    this.syncPanel(space, panel, body, enabled);
-    const panelButton = (id, label, icon) => {
-      const on = panel && !panel.hidden && body?.active === id;
-      return h_flex().id(`panel-${id}`).h(26).px(compact ? 7 : 10).gap(5).flex_none().items_center().rounded(13)
-        .text_size(12).bg(on ? t.selected : t.canvas).text_color(on ? t.foreground : t.muted)
-        .hover(s => s.bg(t.hover)).on_mouse_down("left", stop)
-        .on_click(() => {
-          if (on) run("layout.hide", { id: "panel" });
-          else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
-        }).child(svg(icon).size(14)).when(!compact, el => el.child(label));
-    };
     return h_flex().id("studio-tabs").size_full().min_w(0).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
       .on_size_change((size, cx) => {
         this.autoDock(size);
+        this.autoPanel(size);
         if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size;
       })
       .on_mouse_up("left", () => { this.pressed = null; })
@@ -138,8 +163,7 @@ export default class Tabs extends View {
         .on_size_change((_size, cx) => { if (active >= 0) { this.scroll.scroll_to_item(active); cx.notify(); } })
         .children(shown.map(item)))
       .child(button("tab-new", "+", () => this.newTab()))
-      .when(enabled.includes("files"), el => el.child(panelButton("files", "Files", "mods/files/file.svg")))
-      .when(enabled.includes("changes"), el => el.child(panelButton("changes", "Changes", "mods/changes/changes.svg")))
+      .children(this.pills(t))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/studio-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/studio-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

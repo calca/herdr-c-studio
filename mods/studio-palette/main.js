@@ -1,7 +1,23 @@
 // Spotlight-style palette: one input, one flat list of tabs and quick actions.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
+import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused, layout } from "herdr";
+
+function find(node, id) {
+  if (node?.id === id) return node;
+  for (const child of node?.children ?? []) {
+    const found = find(child, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function togglePanel(id) {
+  const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
+  if (!panel) return;
+  if (!panel.hidden && body?.active === id) run("layout.hide", { id: "panel" });
+  else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
+}
 
 const ROW_H = 44;
 const VISIBLE = 8;
@@ -21,6 +37,8 @@ const ACTIONS = [
     setShared("dock.pinned", v);
     run("layout.resize", { id: "sidebar", px: v ? 296 : 56 });
   } },
+  { label: "Files panel", hint: "⇧⌘E", icon: "▤", go: () => togglePanel("files") },
+  { label: "Changes panel", hint: "⇧⌘G", icon: "±", go: () => togglePanel("changes") },
   { label: "Switch layout", hint: "⇧⌘L", icon: "◫", go: () => run("layout.switch") },
   { label: "Settings", hint: "⌘,", icon: "⚙", go: () => run("app.settings") },
   { label: "Command palette", hint: "⇧⌘P", icon: "›", go: () => run("app.palette") },

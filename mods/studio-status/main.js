@@ -1,8 +1,56 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, theme, run, window, keys } from "herdr";
+import { spaces, agents, panes, focused, exec, layout, theme, run, window, keys } from "herdr";
+
+const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
+
+function find(node, id) {
+  if (node?.id === id) return node;
+  for (const child of node?.children ?? []) {
+    const found = find(child, id);
+    if (found) return found;
+  }
+  return null;
+}
 
 export default class WorkspaceStatus extends View {
+  init(_props, cx) {
+    this.diff = null;
+    cx.timer.every(5000, (c) => this.refresh(c));
+  }
+
+  // Where git runs: the focused pane's folder, as the Changes panel does.
+  where() {
+    const space = spaces().find((s) => s.active), f = focused();
+    const pane = f?.pane ? panes().find((p) => p.pane === f.pane) : null;
+    return { cwd: pane?.cwd || f?.cwd || space?.folder, on: space?.machine ?? null };
+  }
+
+  refresh(cx) {
+    if (this.busy) return;
+    const at = this.where();
+    if (!at.cwd) return;
+    this.busy = true;
+    cx.spawn(async (c) => {
+      try {
+        const r = await exec("git", [...READ, "diff", "--shortstat", "HEAD"], { cwd: at.cwd, on: at.on, timeout: 4000 });
+        const out = r.code === 0 ? r.stdout : "";
+        const plus = Number(/(\d+) insertion/.exec(out)?.[1] ?? 0), minus = Number(/(\d+) deletion/.exec(out)?.[1] ?? 0);
+        const next = plus || minus ? { plus, minus } : null;
+        this.at = JSON.stringify(at);
+        if (JSON.stringify(next) !== JSON.stringify(this.diff)) { this.diff = next; c.notify(); }
+      } catch {}
+      this.busy = false;
+    });
+  }
+
+  openChanges() {
+    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
+    if (!panel) return;
+    if (!panel.hidden && body?.active === "changes") run("layout.hide", { id: "panel" });
+    else { run("layout.select", { stack: "panel-body", child: "changes" }); run("layout.show", { id: "panel" }); }
+  }
+
   // The palette key as actually bound, not a hardcoded one; without a
   // binding the hint stays useful ("commands") instead of lying.
   hint(t) {
@@ -33,6 +81,7 @@ export default class WorkspaceStatus extends View {
 
   render(cx) {
     const t = theme();
+    if (JSON.stringify(this.where()) !== this.at) this.refresh(cx);
     const space = spaces().find(s => s.active);
     const list = agents();
     const count = (st) => list.filter(a => a.status === st).length;
@@ -47,6 +96,9 @@ export default class WorkspaceStatus extends View {
       .child(div().px(8).child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer")))
       .when(Boolean(space?.branch), el => el.child(click(div(), "status-branch", (cx) => this.copyBranch(space.branch, cx))
         .flex().items_center().child(label("branch", this.copied ? "Copied" : space.branch))))
+      .when(Boolean(this.diff), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => this.openChanges())
+        .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
+        .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`))))
       .child(div().flex_1())
       .when(working > 0, el => el.child(pill("status-working", t.working, `${working} working`, (a) => a.status === "working")))
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))

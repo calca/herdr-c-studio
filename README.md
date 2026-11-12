@@ -10,6 +10,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 - `mods/studio-pane` – terminal pane header
 - `mods/studio-status` – status bar; click working / needs you / idle to cycle agents, click the branch to copy it
 - `mods/studio-palette` – Spotlight-style ⌘K search for tabs, spaces, agents and actions
+- Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
 - `mods/studio-launch` – new-tab launcher (⌘T or +): Terminal or an installed agent, in the folder you came from
 - `mods/studio-toast` – notifications in the palette style
 - `themes/claude-{dark,light}.json` – warm palettes used by the layout; `themes/macos-{dark,light}.json` – cool alternative

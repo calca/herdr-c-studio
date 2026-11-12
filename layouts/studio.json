@@ -101,6 +101,45 @@
               "lone": true
             }
           }
+        },
+        {
+          "id": "panel",
+          "type": "column",
+          "hidden": true,
+          "size": {
+            "px": 360
+          },
+          "min": 280,
+          "max": 700,
+          "background": "background",
+          "border": {
+            "width": 1,
+            "color": "border"
+          },
+          "radius": 14,
+          "children": [
+            {
+              "id": "panel-body",
+              "type": "stack",
+              "active": "files",
+              "children": [
+                {
+                  "id": "files",
+                  "type": "block",
+                  "content": {
+                    "mod": "files"
+                  }
+                },
+                {
+                  "id": "changes",
+                  "type": "block",
+                  "content": {
+                    "mod": "changes"
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     },
