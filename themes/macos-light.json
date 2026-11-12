@@ -24,6 +24,11 @@
   "colors": {
     "accent": "#007aff",
     "working": "#b7791f",
-    "blocked": "#5856d6"
+    "blocked": "#5856d6",
+    "chrome": "#f2f2f5",
+    "popover": "#ffffff",
+    "raised": "#e9e9ee",
+    "hover": "#e8e8ed",
+    "selected": "#dcdce3"
   }
 }

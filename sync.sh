@@ -6,7 +6,7 @@ SRC="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 DEST="$(cd "$(dirname "$0")" && pwd)"
 
 cp "$SRC/layouts/studio.json" "$DEST/layouts/"
-cp "$SRC/themes/macos-dark.json" "$SRC/themes/macos-light.json" "$DEST/themes/"
+cp "$SRC"/themes/{macos,claude}-{dark,light}.json "$DEST/themes/"
 for m in "$DEST"/mods/*/; do
   name="$(basename "$m")"
   for f in "$SRC/mods/$name"/*; do

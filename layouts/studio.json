@@ -3,8 +3,8 @@
   "type": "column",
   "resizable": false,
   "theme": {
-    "light": "macos-light",
-    "dark": "macos-dark"
+    "light": "claude-light",
+    "dark": "claude-dark"
   },
   "font": "SF Mono",
   "font_size": 14,
