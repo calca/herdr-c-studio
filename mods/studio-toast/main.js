@@ -6,12 +6,28 @@ import { View, div, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { props, closeOverlay, run, theme } from "herdr";
 
+// Shared by every toast copy (module scope): which overlay shows each notice now.
+const LIVE = new Map();
+
 const DOT = { error: "blocked", warning: "working", success: "done", info: "accent" };
 
 export default class StudioToast extends View {
+  // The same notice twice (title, body, level) keeps one toast: the newest
+  // closes the one before it and counts how many it stands for.
   init(_props, cx) {
+    const p = props() ?? {};
+    this.key = [p.title, p.body, p.level].join("\u0000");
+    this.overlay = p.overlay;
+    const before = LIVE.get(this.key);
+    if (before && before.overlay !== p.overlay) closeOverlay(before.overlay);
+    this.count = before && before.overlay !== p.overlay ? before.count + 1 : 1;
+    LIVE.set(this.key, { overlay: p.overlay, count: this.count });
     this.shown = false;
     cx.timer.after(30, (c) => { this.shown = true; c.notify(); });
+  }
+
+  async close() {
+    if (LIVE.get(this.key)?.overlay === this.overlay) LIVE.delete(this.key);
   }
 
   render(cx) {
@@ -47,6 +63,8 @@ export default class StudioToast extends View {
               .text_size(12).text_color(t.foreground).cursor_pointer().hover(s => s.bg(t.hover))
               .on_click((_e, cx) => { cx.stop_propagation(); cx.write_to_clipboard(command); this.copied = true; cx.notify(); })
               .child(this.copied ? "Copied" : "Copy")))),
-      );
+      )
+      .when(this.count > 1, (el) => el.child(div().flex_none().px(7).h(20).flex().items_center().rounded(10)
+        .bg(t.raised).text_size(11.5).font_semibold().text_color(t.muted).child(`×${this.count}`)));
   }
 }

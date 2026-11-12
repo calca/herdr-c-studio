@@ -95,7 +95,7 @@ export default class GigiDock extends View {
             .hover((x) => x.bg(t.hover))
             .on_mouse_down("left", (e) => run(e.click_count === 2 ? "space.rename" : "space.select", { id: s.id }))
             .on_mouse_down("right", () => run("space.rename", { id: s.id }))
-            .when(s.active, (el) => el.child(div().absolute().left(2).top(15).w(3).h(16).rounded(2).bg(t.accent)))
+            .when(s.active, (el) => el.bg(t.selected))
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(9)
                 .text_color(s.active ? t.foreground : t.dim)
@@ -127,7 +127,7 @@ export default class GigiDock extends View {
           const focused = s.active && c.active;
           return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(30).mr(4).px(10).gap(10).items_center().rounded(8)
             .relative().hover((x) => x.bg(t.hover))
-            .when(focused, (el) => el.child(div().absolute().bottom(0).left(8).right(8).h(2).rounded(1).bg(t.accent)))
+            .when(focused, (el) => el.bg(t.selected).font_semibold())
             .on_mouse_down("left", (e) => {
               run("space.select", { id: s.id });
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });

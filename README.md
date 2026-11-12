@@ -6,7 +6,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 
 - `layouts/studio.json` – the layout
 - `mods/studio-dock` – floating spaces dock with all tabs (peek on hover, pin with ⌘B; auto-pins when the window is ≥1500 px, folds below 1400 px)
-- `mods/studio-tabs` – tab bar with agent session titles and accent underline
+- `mods/studio-tabs` – tab bar with agent session titles; active tab as a soft pill, status dot first
 - `mods/studio-pane` – terminal pane header
 - `mods/studio-status` – status bar; click working / needs you / idle to cycle agents, click the branch to copy it
 - `mods/studio-palette` – Spotlight-style ⌘K search for tabs, spaces, agents and actions
