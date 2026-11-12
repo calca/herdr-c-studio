@@ -13,8 +13,8 @@
   "toast": "studio-toast",
   "titlebar": "none",
   "traffic_lights": [
-    16,
-    12
+    18,
+    22
   ],
   "terminal_padding": [
     16,
@@ -28,7 +28,7 @@
         "mod": "studio-tabs"
       },
       "size": {
-        "px": 36
+        "px": 48
       },
       "window_drag": true
     },

@@ -95,9 +95,10 @@ export default class GigiDock extends View {
             .hover((x) => x.bg(t.hover))
             .on_mouse_down("left", (e) => run(e.click_count === 2 ? "space.rename" : "space.select", { id: s.id }))
             .on_mouse_down("right", () => run("space.rename", { id: s.id }))
-            .when(s.active, (el) => el.bg(t.selected))
+            .when(s.active && open, (el) => el.bg(t.selected))
             .child(div().relative().size(30).flex_none()
-              .child(div().size(30).flex().items_center().justify_center().rounded(9)
+              .child(div().size(30).flex().items_center().justify_center().rounded(15)
+                .when(s.active && !open, (d) => d.bg(t.selected))
                 .text_color(s.active ? t.foreground : t.dim)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
