@@ -18,4 +18,10 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 herdr-app do layout.switch '{"name":"studio"}'
 ```
 
+## Update the repo after tweaking the layout
+
+```bash
+./sync.sh   # copies the files from ~/.config/herdr-app, shows git status
+```
+
 Shipped Herdr layouts and mods are overwritten on app start; this repo only holds the custom ones.
