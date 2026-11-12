@@ -1,6 +1,6 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, focused, nextCommand } from "herdr";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -15,10 +15,24 @@ function find(node, id) {
 }
 
 export default class Tabs extends View {
-  init() {
+  init(_props, cx) {
     this.pressed = null;
+    cx.spawn(async (c) => {
+      for (;;) {
+        if ((await nextCommand()) === "new") this.newTab();
+        c.notify();
+      }
+    });
     this.scroll = ScrollHandle.new();
     this.panels = JSON.parse(localStorage.getItem("panels") ?? "{}");
+  }
+
+  newTab(space) {
+    const f = focused();
+    const sp = space ?? f?.space;
+    const here = sp === f?.space ? panes().find((p) => p.pane === f?.pane && p.terminal) : null;
+    const folder = f?.cwd ?? here?.cwd ?? undefined;
+    run("tab.new", { space: sp, name: "New tab", mod: "studio-launch", props: { space: sp, folder } });
   }
 
   // The side panel is remembered per space: switching shows that space's choice
@@ -123,7 +137,7 @@ export default class Tabs extends View {
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
         .on_size_change((_size, cx) => { if (active >= 0) { this.scroll.scroll_to_item(active); cx.notify(); } })
         .children(shown.map(item)))
-      .child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
+      .child(button("tab-new", "+", () => this.newTab()))
       .when(enabled.includes("files"), el => el.child(panelButton("files", "Files", "mods/files/file.svg")))
       .when(enabled.includes("changes"), el => el.child(panelButton("changes", "Changes", "mods/changes/changes.svg")))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))

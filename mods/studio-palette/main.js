@@ -1,13 +1,13 @@
 // Spotlight-style palette: one input, one flat list of tabs and quick actions.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, run, theme, props, closeOverlay, shared, setShared } from "herdr";
+import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
 
 const ROW_H = 44;
 const VISIBLE = 8;
 
 const ACTIONS = [
-  { label: "New tab", hint: "⌘T", icon: "+", go: () => run("tab.new") },
+  { label: "New tab", hint: "⌘T", icon: "+", go: () => { const f = focused(); run("tab.new", { name: "New tab", mod: "studio-launch", props: { space: f?.space, folder: f?.cwd ?? undefined } }); } },
   { label: "New space", hint: "⌘N", icon: "+", go: () => run("space.new") },
   { label: "Split right", hint: "⌘D", icon: "▥", go: () => run("pane.split", { direction: "right" }) },
   { label: "Split down", hint: "⇧⌘D", icon: "▤", go: () => run("pane.split", { direction: "down" }) },

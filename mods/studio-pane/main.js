@@ -29,6 +29,8 @@ function icon(p, size, color) {
   return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
+const MOD_TITLES = { "studio-launch": "New tab" };
+
 function folder(cwd) {
   if (!cwd) return "";
   const h = home();
@@ -60,7 +62,7 @@ export default class Pane extends View {
     const t = theme();
     const p = this.me();
     if (!p) return div();
-    const name = ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
+    const name = (p.mod && MOD_TITLES[p.mod]) || ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
     const pic = icon(p.program, 16, t.dim);
     const st = p.status;
     const pane = p.pane;
