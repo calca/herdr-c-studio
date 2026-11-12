@@ -1,23 +1,8 @@
 // Spotlight-style palette: one input, one flat list of tabs and quick actions.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused, layout } from "herdr";
-
-function find(node, id) {
-  if (node?.id === id) return node;
-  for (const child of node?.children ?? []) {
-    const found = find(child, id);
-    if (found) return found;
-  }
-  return null;
-}
-
-function togglePanel(id) {
-  const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-  if (!panel) return;
-  if (!panel.hidden && body?.active === id) run("layout.hide", { id: "panel" });
-  else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
-}
+import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
+import { togglePanel, pinDock, tabName, openLauncher } from "./kit.js";
 
 const ROW_H = 44;
 const RECENT = "studio-palette.recent";
@@ -45,7 +30,7 @@ function score(query, text) {
 const VISIBLE = 8;
 
 const ACTIONS = [
-  { label: "New tab", hint: "⌘T", icon: "+", go: () => { const f = focused(); run("tab.new", { name: "New tab", mod: "studio-launch", props: { space: f?.space, folder: f?.cwd ?? undefined } }); } },
+  { label: "New tab", hint: "⌘T", icon: "+", go: () => { const f = focused(); openLauncher(f?.space, f?.cwd); } },
   { label: "New space", hint: "⌘N", icon: "+", go: () => run("space.new") },
   { label: "Split right", hint: "⌘D", icon: "▥", go: () => run("pane.split", { direction: "right" }) },
   { label: "Split down", hint: "⇧⌘D", icon: "▤", go: () => run("pane.split", { direction: "down" }) },
@@ -54,11 +39,7 @@ const ACTIONS = [
   { label: "Close tab", hint: "⌘W", icon: "✕", go: () => run("tab.close") },
   { label: "Rename tab", icon: "✎", go: () => run("tab.rename") },
   { label: "Rename space", icon: "✎", go: () => run("space.rename") },
-  { label: "Toggle dock", hint: "⌘B", icon: "◧", go: () => {
-    const v = shared("dock.pinned") !== true;
-    setShared("dock.pinned", v);
-    run("layout.resize", { id: "sidebar", px: v ? 296 : 56 });
-  } },
+  { label: "Toggle dock", hint: "⌘B", icon: "◧", go: () => pinDock(shared("dock.pinned") !== true) },
   { label: "Files panel", hint: "⇧⌘E", icon: "▤", go: () => togglePanel("files") },
   { label: "Changes panel", hint: "⇧⌘G", icon: "±", go: () => togglePanel("changes") },
   { label: "Switch layout", hint: "⇧⌘L", icon: "◫", go: () => run("layout.switch") },
@@ -94,11 +75,8 @@ export default class StudioPalette extends View {
 
   items() {
     const all = panes();
-    const tabs = spaces().flatMap((w) => w.tabs.map((c) => {
-      const lead = all.find((p) => p.tab === c.id && p.program?.agent) ?? all.find((p) => p.tab === c.id);
-      const session = lead?.program?.agent && lead.title && lead.title !== lead.program.name ? lead.title : null;
-      return { c, w, name: c.named ? c.name : session ?? lead?.program?.name ?? "Terminal" };
-    })).map(({ c, w, name }) => ({
+    const tabs = spaces().flatMap((w) => w.tabs.map((c) => ({ c, w, name: tabName(c, all).name })))
+      .map(({ c, w, name }) => ({
       kind: "tab", key: `tab:${c.id}`, id: c.id, label: name, sub: w.name, status: c.status, here: w.active && c.active,
       go: () => run("tab.select", { id: c.id }),
     }));

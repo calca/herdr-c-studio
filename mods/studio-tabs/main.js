@@ -1,20 +1,12 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings, focused, nextCommand } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, layout, focused, nextCommand } from "herdr";
+import { find, panelShown, showPanel, togglePanel, pinDock, tabName, openLauncher } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
 const PANEL_MIN = 1100;
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
-
-function find(node, id) {
-  if (node?.id === id) return node;
-  for (const child of node?.children ?? []) {
-    const found = find(child, id);
-    if (found) return found;
-  }
-  return null;
-}
 
 export default class Tabs extends View {
   init(_props, cx) {
@@ -23,7 +15,7 @@ export default class Tabs extends View {
       for (;;) {
         const cmd = await nextCommand();
         if (cmd === "new") this.newTab();
-        else if (cmd === "files" || cmd === "changes") this.togglePanel(cmd);
+        else if (cmd === "files" || cmd === "changes") togglePanel(cmd);
         c.notify();
       }
     });
@@ -31,19 +23,16 @@ export default class Tabs extends View {
     this.panels = JSON.parse(localStorage.getItem("panels") ?? "{}");
   }
 
-  newTab(space) {
+  newTab() {
     const f = focused();
-    const sp = space ?? f?.space;
-    const here = sp === f?.space ? panes().find((p) => p.pane === f?.pane && p.terminal) : null;
-    const folder = f?.cwd ?? here?.cwd ?? undefined;
-    run("tab.new", { space: sp, name: "New tab", mod: "studio-launch", props: { space: sp, folder } });
+    openLauncher(f?.space, f?.cwd);
   }
 
   // The side panel is remembered per space: switching shows that space's choice
   // (closed if it never had one), and opening or closing it records it.
-  syncPanel(space, panel, body, enabled) {
-    if (!space || !panel) return;
-    const now = panel.hidden ? null : body?.active ?? null;
+  syncPanel(space, enabled) {
+    if (!space || !find(layout(), "panel")) return;
+    const now = panelShown();
     if (space.id !== this.space) {
       const first = this.space === undefined;
       this.space = space.id; this.pending = null;
@@ -51,8 +40,7 @@ export default class Tabs extends View {
         const stored = this.panels[space.id] ?? null, want = enabled.includes(stored) ? stored : null;
         if (want !== now) {
           this.pending = { want, until: Date.now() + 1000 };
-          if (want) { run("layout.select", { stack: "panel-body", child: want }); run("layout.show", { id: "panel" }); }
-          else run("layout.hide", { id: "panel" });
+          showPanel(want);
           return;
         }
       }
@@ -67,30 +55,23 @@ export default class Tabs extends View {
     localStorage.setItem("panels", JSON.stringify(this.panels));
   }
 
-  togglePanel(id) {
-    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-    if (!panel) return;
-    if (!panel.hidden && body?.active === id) run("layout.hide", { id: "panel" });
-    else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
-  }
-
   // Shrinking the window under PANEL_MIN folds the side panel away; opening it there stays allowed.
   autoPanel(size) {
     const narrow = size.width < PANEL_MIN;
-    if (narrow && this.narrow === false && find(layout(), "panel")?.hidden === false) run("layout.hide", { id: "panel" });
+    if (narrow && this.narrow === false && panelShown()) showPanel(null);
     this.narrow = narrow;
   }
 
   pills(t) {
-    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-    if (!panel) return [];
+    if (!find(layout(), "panel")) return [];
+    const shownPanel = panelShown();
     return PANELS.map(([id, label, tip]) => {
-      const on = !panel.hidden && body?.active === id;
+      const on = shownPanel === id;
       return div().id(`panel-${id}`).size(26).flex().flex_none().items_center().justify_center().rounded(13)
         .tooltip(tip).text_size(12.5).font_medium().bg(on ? t.selected : t.canvas).text_color(on ? t.foreground : t.muted)
         .cursor_pointer().hover(s => s.bg(t.hover))
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
-        .on_click(() => this.togglePanel(id)).child(label);
+        .on_click(() => togglePanel(id)).child(label);
     });
   }
 
@@ -98,17 +79,13 @@ export default class Tabs extends View {
     const wide = this.wide === undefined ? size.width >= WIDE_AT : size.width >= (this.wide ? NARROW_AT : WIDE_AT);
     if (wide === this.wide) return;
     this.wide = wide;
-    setShared("dock.pinned", wide);
-    run("layout.resize", { id: "sidebar", px: wide ? 296 : 56 });
+    pinDock(wide);
   }
 
   render() {
     const t = theme();
     const space = spaces().find(p => p.active);
-    {
-      const root = layout();
-      this.syncPanel(space, find(root, "panel"), find(root, "panel-body"), PANELS.map(([id]) => id));
-    }
+    this.syncPanel(space, PANELS.map(([id]) => id));
     if (shared("dock.pinned") === true) return h_flex().id("studio-tabs-pinned").size_full().pt(10).pr(16).gap(4).items_center().justify_end()
       .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
       .children(this.pills(t));
@@ -123,11 +100,9 @@ export default class Tabs extends View {
     const stop = (_e, cx) => cx.stop_propagation();
     const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
+    const all = panes();
     const item = (c, i) => {
-      const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
-      const lead = panes().find(p => p.tab === c.id && p.program?.agent) ?? panes().find(p => p.tab === c.id);
-      const session = (lead?.program?.agent && lead.title && lead.title !== lead.program.name) ? lead.title : null;
-      const name = c.named ? c.name : session ?? program?.name ?? "Terminal";
+      const { name, program } = tabName(c, all);
       return h_flex().id(`tab-${c.id}`).h(30).px(13).gap(7).rounded(15).items_center().flex_none().text_size(14)
         // A rename or status dot on this or an earlier tab can push the active one out.
         .when(i <= active, el => el.on_size_change((_size, cx) => { this.scroll.scroll_to_item(active); cx.notify(); }))
@@ -147,7 +122,7 @@ export default class Tabs extends View {
         .when(c.active, el => el.bg(t.selected).font_semibold())
         .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(13))));
     };
-    const root = layout(), w = window();
+    const w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;

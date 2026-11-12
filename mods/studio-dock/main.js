@@ -1,9 +1,8 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { spaces, agents, panes, theme, run, props, placement, shared, setShared, openOverlay, nextCommand, keys } from "herdr";
+import { spaces, agents, panes, theme, run, props, placement, shared, nextCommand, keys } from "herdr";
+import { SIDEBAR, pinDock, tabName, openLauncher } from "./kit.js";
 
-const OPEN_W = 296;
-const PEEK_W = 56;
 
 const initial = (name) => (name || "?").trim().charAt(0).toUpperCase();
 
@@ -23,7 +22,7 @@ const STATUS = {
   idle: { label: "Idle", key: "dim" },
 };
 
-export default class GigiDock extends View {
+export default class StudioDock extends View {
   init(_props, cx) {
     this.hover = null;
     this.docked = Boolean(props()?.docked);
@@ -40,12 +39,11 @@ export default class GigiDock extends View {
   }
 
   apply(pinned) {
-    run("layout.resize", { id: "sidebar", px: pinned ? OPEN_W : PEEK_W });
+    run("layout.resize", { id: "sidebar", px: pinned ? SIDEBAR.open : SIDEBAR.peek });
   }
 
   setPinned(v) {
-    setShared("dock.pinned", v);
-    this.apply(v);
+    pinDock(v);
   }
 
   shortcut(index) {
@@ -95,17 +93,16 @@ export default class GigiDock extends View {
             .hover((x) => x.bg(t.hover))
             .on_mouse_down("left", (e) => run(e.click_count === 2 ? "space.rename" : "space.select", { id: s.id }))
             .on_mouse_down("right", () => run("space.rename", { id: s.id }))
-            .when(s.active && open, (el) => el.bg(t.selected))
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
-                .when(s.active && !open, (d) => d.bg(t.selected))
+                .when(s.active, (d) => d.bg(t.selected))
                 .text_color(s.active ? t.foreground : t.dim)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
                 div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover)
                   .when(s.status === "working" || s.status === "blocked", (d) => d.loop("opacity", { from: 0.35, to: 1, period: s.status === "blocked" ? 1400 : 1800 })))))
             .child(v_flex().flex_1().min_w(0).gap(1)
-              .child(div().truncate().text_size(14.5).font_medium().text_color(s.active ? t.foreground : t.muted).child(s.name))
+              .child(div().truncate().text_size(14.5).font_medium().when(s.active, (d) => d.font_semibold()).text_color(s.active ? t.foreground : t.muted).child(s.name))
               .child(div().truncate().text_size(11.5).text_color(t.dim).child(sub)))
             .when(needs > 0 && !hovered, (el) => el.child(
               div().flex_none().px(7).h(18).flex().items_center().rounded(9).bg(t.blocked + "26")
@@ -116,13 +113,11 @@ export default class GigiDock extends View {
                 const active = s.tabs.find((c) => c.active) ?? s.tabs[0];
                 const lead = panes().find((p) => p.tab === active?.id && p.focused) ?? panes().find((p) => p.tab === active?.id && p.cwd);
                 run("space.select", { id: s.id });
-                run("tab.new", { space: s.id, name: "New tab", mod: "studio-launch", props: { space: s.id, folder: lead?.cwd ?? s.folder ?? undefined } });
+                openLauncher(s.id, lead?.cwd ?? s.folder);
               }))
               .child(this.iconButton(t, `dock-close-${s.id}`, "×", () => run("space.close", { id: s.id })))))
         .when(open && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
-          const lead = panes().find((p) => p.tab === c.id && p.program?.agent) ?? panes().find((p) => p.tab === c.id);
-          const session = lead?.program?.agent && lead.title && lead.title !== lead.program.name ? lead.title : null;
-          const name = c.named ? c.name : session ?? lead?.program?.name ?? "Terminal";
+          const { name } = tabName(c);
           const st = c.status ? (STATUS[c.status] ?? STATUS.idle) : null;
           const since = c.status === "working" ? c.working_since : c.changed_at;
           const focused = s.active && c.active;
@@ -145,8 +140,7 @@ export default class GigiDock extends View {
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
-    
-    return v_flex().w(OPEN_W).py(10).px(open ? 10 : 4).gap(6)
+    return v_flex().w(SIDEBAR.open).py(10).px(open ? 10 : 4).gap(6)
       .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.chrome).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
       .child(
         h_flex().id("dock-head").h(30).px(8).items_center().gap(10)
@@ -156,6 +150,6 @@ export default class GigiDock extends View {
           .child(this.iconButton(t, "dock-pin", pinned ? "◧" : "◨", () => this.setPinned(!pinned))))
       .children(all.map(row))
       .child(div().h(1).mx(8).my(2).bg(t.border))
-      .child(footerButton("dock-new", "+", "New space", () => run("space.new")))
+      .child(footerButton("dock-new", "+", "New space", () => run("space.new")));
   }
 }

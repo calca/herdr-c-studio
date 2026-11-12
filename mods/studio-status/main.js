@@ -1,17 +1,9 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, panes, focused, exec, layout, theme, run, window, keys } from "herdr";
+import { spaces, agents, panes, focused, exec, theme, run, window, keys } from "herdr";
+import { togglePanel } from "./kit.js";
 
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
-
-function find(node, id) {
-  if (node?.id === id) return node;
-  for (const child of node?.children ?? []) {
-    const found = find(child, id);
-    if (found) return found;
-  }
-  return null;
-}
 
 export default class WorkspaceStatus extends View {
   init(_props, cx) {
@@ -42,13 +34,6 @@ export default class WorkspaceStatus extends View {
       } catch {}
       this.busy = false;
     });
-  }
-
-  openChanges() {
-    const root = layout(), panel = find(root, "panel"), body = find(root, "panel-body");
-    if (!panel) return;
-    if (!panel.hidden && body?.active === "changes") run("layout.hide", { id: "panel" });
-    else { run("layout.select", { stack: "panel-body", child: "changes" }); run("layout.show", { id: "panel" }); }
   }
 
   // The palette key as actually bound, not a hardcoded one; without a
@@ -96,7 +81,7 @@ export default class WorkspaceStatus extends View {
       .child(div().px(8).child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer")))
       .when(Boolean(space?.branch), el => el.child(click(div(), "status-branch", (cx) => this.copyBranch(space.branch, cx))
         .flex().items_center().child(label("branch", this.copied ? "Copied" : space.branch))))
-      .when(Boolean(this.diff), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => this.openChanges())
+      .when(Boolean(this.diff), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => togglePanel("changes"))
         .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
         .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`))))
       .child(div().flex_1())

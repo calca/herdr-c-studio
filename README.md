@@ -29,4 +29,6 @@ herdr-app do layout.switch '{"name":"studio"}'
 ./sync.sh   # copies the files from ~/.config/herdr-app, shows git status
 ```
 
+`kit.js` (panel toggling, tab names, dock pinning) is shared code. Herdr only resolves imports inside a mod's folder, so each mod that uses it keeps an identical copy: edit one, copy it to the others, and `sync.sh` stops if they differ.
+
 Shipped Herdr layouts and mods are overwritten on app start; this repo only holds the custom ones.
