@@ -4,6 +4,7 @@
     "cmd-k": "mod.open:studio-palette",
     "cmd-t": "studio-tabs.new",
     "cmd-shift-e": "studio-tabs.files",
-    "cmd-shift-g": "studio-tabs.changes"
+    "cmd-shift-g": "studio-tabs.changes",
+    "cmd-p": "mod.open:studio-palette"
   }
 }

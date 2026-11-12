@@ -20,6 +20,28 @@ function togglePanel(id) {
 }
 
 const ROW_H = 44;
+const RECENT = "studio-palette.recent";
+const RECENT_MAX = 6;
+
+// Higher is better, 0 = no match. Whole substring beats word initials ("cc"
+// finds Claude Code), which beat letters in order ("clcd").
+function score(query, text) {
+  const q = query.toLowerCase(), h = text.toLowerCase();
+  if (!q) return 1;
+  const at = h.indexOf(q);
+  if (at === 0) return 100;
+  if (at > 0) return /[\s/·-]/.test(h[at - 1]) ? 80 : 60;
+  const initials = h.split(/[\s/·-]+/).filter(Boolean).map((w) => w[0]).join("");
+  if (initials.startsWith(q)) return 50;
+  if (initials.includes(q)) return 40;
+  let i = 0, gaps = 0;
+  for (const ch of h) {
+    if (ch === q[i]) i++;
+    else if (i > 0 && i < q.length) gaps++;
+    if (i === q.length) return Math.max(1, 30 - gaps);
+  }
+  return 0;
+}
 const VISIBLE = 8;
 
 const ACTIONS = [
@@ -49,8 +71,16 @@ export default class StudioPalette extends View {
     this.filter = "";
     this.at = 0;
     this.input = InputState.new({ placeholder: "Search tabs and actions…" });
-    this.input.on("change", (_e, cx) => { this.filter = this.input.value(); this.at = 0; cx.notify(); });
-    this.input.on("submit", (_e, cx) => this.go(this.items()[this.at]));
+    this.input.on("change", (_e, cx) => {
+      if (this.renaming) return;
+      this.filter = this.input.value(); this.at = 0; cx.notify();
+    });
+    this.input.on("submit", (_e, cx) => {
+      if (!this.renaming) return this.go(this.items()[this.at]);
+      const name = this.input.value().trim();
+      this.close();
+      if (name) run("tab.rename", { id: this.renaming.id, name });
+    });
     this.input.focus();
     cx.timer.after(600, () => this.input.focus());
     this.handle = cx.focus_handle();
@@ -69,31 +99,50 @@ export default class StudioPalette extends View {
       const session = lead?.program?.agent && lead.title && lead.title !== lead.program.name ? lead.title : null;
       return { c, w, name: c.named ? c.name : session ?? lead?.program?.name ?? "Terminal" };
     })).map(({ c, w, name }) => ({
-      kind: "tab", label: name, sub: w.name, status: c.status, here: w.active && c.active,
+      kind: "tab", key: `tab:${c.id}`, id: c.id, label: name, sub: w.name, status: c.status, here: w.active && c.active,
       go: () => run("tab.select", { id: c.id }),
     }));
     const rank = { blocked: 0, done: 1, working: 2 };
     tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
     const spaceItems = spaces().map((w) => ({
-      kind: "action", label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
+      kind: "action", key: `space:${w.id}`, label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
     }));
     const known = (shared("new-menu.agents") ?? {})[""] ?? [];
     const agentItems = known.filter((a) => a.installed).map((a) => ({
-      kind: "action", label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
+      kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
     }));
-    const acts = [...spaceItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", ...a }))];
+    const acts = [...spaceItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
     const list = [...tabs, ...acts];
-    if (!words.length) return list;
-    return list.filter((i) => {
-      const hay = `${i.label} ${i.sub ?? ""}`.toLowerCase();
-      return words.every((w) => hay.includes(w));
-    });
+    if (!words.length) {
+      const recent = (shared(RECENT) ?? []).map((k) => list.find((i) => i.key === k)).filter(Boolean);
+      recent.forEach((i) => { i.recent = true; });
+      return [...recent, ...list.filter((i) => !i.recent)];
+    }
+    return list
+      .map((i, n) => {
+        let total = 0;
+        for (const w of words) {
+          const best = Math.max(score(w, i.label), score(w, i.sub ?? "") * 0.6);
+          if (!best) return null;
+          total += best;
+        }
+        return { i, n, total };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.total - a.total || a.n - b.n)
+      .map((x) => x.i);
+  }
+
+  remember(item) {
+    const keep = (shared(RECENT) ?? []).filter((k) => k !== item.key && !k.startsWith("tab:"));
+    setShared(RECENT, [item.key, ...keep].slice(0, RECENT_MAX));
   }
 
   go(item) {
     if (!item) return;
     this.close();
+    if (item.kind !== "tab") this.remember(item);
     item.go();
   }
 
@@ -114,7 +163,8 @@ export default class StudioPalette extends View {
         .on_click(() => this.go(item))
         .child(item.kind === "tab" ? dot(item.status) : div().w(14).flex_none().text_color(t.muted).child(item.icon))
         .child(div().flex_1().truncate().text_size(14.5).text_color(t.foreground).when(item.here, (d) => d.font_semibold()).child(item.label))
-        .when(item.sub, (el) => el.child(div().text_size(12).text_color(t.dim).child(item.sub)))
+        .when(on && item.kind === "tab", (el) => el.child(div().text_size(11.5).text_color(t.dim).child("⌘R rename · ⌘⌫ close")))
+        .when(item.sub && !(on && item.kind === "tab"), (el) => el.child(div().text_size(12).text_color(t.dim).child(item.sub)))
         .when(item.hint, (el) => el.child(div().text_size(12).text_color(t.dim).child(item.hint)));
     };
 
@@ -122,7 +172,27 @@ export default class StudioPalette extends View {
       .opacity(this.shown ? 1 : 0).transition("opacity", { duration: 160, easing: "ease-out" })
       .on_key_down((e, cx) => {
         const k = e.key;
+        if (k === "escape" && this.renaming) {
+          this.renaming = null;
+          this.input.set_value(this.filter);
+          cx.stop_propagation();
+          return cx.notify();
+        }
         if (k === "escape") return this.close();
+        if (this.renaming) return;
+        const sel = items[this.at];
+        if (e.modifiers.platform && sel?.kind === "tab" && k === "backspace") {
+          cx.stop_propagation();
+          this.close();
+          return run("tab.close", { id: sel.id });
+        }
+        if (e.modifiers.platform && sel?.kind === "tab" && k === "r") {
+          cx.stop_propagation();
+          this.renaming = sel;
+          this.input.set_value(sel.label);
+          this.input.set_selected_range({ start: 0, end: sel.label.length });
+          return cx.notify();
+        }
         if (k === "down") this.at = (this.at + 1) % Math.max(1, items.length);
         else if (k === "up") this.at = (this.at + items.length - 1) % Math.max(1, items.length);
         else return;
@@ -130,9 +200,13 @@ export default class StudioPalette extends View {
         cx.notify();
       })
       .child(h_flex().h(52).flex_none().px(18).gap(12).items_center().border_b(1).border_color(t.border)
-        .child(svg("mods/workspace-chrome/search.svg").size(18).text_color(t.dim))
+        .child(this.renaming
+          ? div().flex_none().text_size(13).text_color(t.dim).child("Rename")
+          : svg("mods/workspace-chrome/search.svg").size(18).text_color(t.dim))
         .child(Input.new(this.input).flex_1().h_full().text_size(17).text_color(t.foreground)))
-      .child(items.length
+      .child(this.renaming
+        ? div().h(ROW_H).px(18).items_center().flex().text_size(12).text_color(t.dim).child("↵ save · esc back")
+        : items.length
         ? v_flex().h(Math.min(items.length, VISIBLE) * ROW_H).min_h(0).overflow_hidden().children(shown.map(row))
         : div().h(ROW_H).px(18).items_center().flex().text_color(t.dim).child("No results"));
   }

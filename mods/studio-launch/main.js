@@ -3,9 +3,12 @@
 
 import { View, div } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { props, theme, run, focused, panes, spaces, shared, setShared, knownAgents, pickFolder, home, nextCommand } from "herdr";
+import { props, theme, run, focused, panes, spaces, shared, setShared, knownAgents, pickFolder, home, nextCommand, openOverlay } from "herdr";
 
 const KNOWN = "new-menu.agents";
+const RECENT = "studio-launch.folders";
+const RECENT_MAX = 12;
+const CHIPS = 5;
 
 export default class StudioLaunch extends View {
   init(_props, cx) {
@@ -40,6 +43,34 @@ export default class StudioLaunch extends View {
     return [{ key: "shell", name: "Terminal", run: null }, ...agents];
   }
 
+  // Folders to jump to: the last ones started in, then those open in other tabs.
+  recents() {
+    const h = home();
+    const open = panes().filter((p) => p.cwd && p.mod !== "studio-launch").map((p) => p.cwd);
+    const seen = new Set([this.folder ?? h, h]);
+    const out = [];
+    for (const f of [...((shared(RECENT) ?? {})[this.machine] ?? []), ...open]) {
+      if (seen.has(f)) continue;
+      seen.add(f);
+      out.push(f);
+      if (out.length === CHIPS) break;
+    }
+    return out;
+  }
+
+  remember() {
+    if (!this.folder) return;
+    const all = shared(RECENT) ?? {};
+    const list = [this.folder, ...(all[this.machine] ?? []).filter((f) => f !== this.folder)];
+    setShared(RECENT, { ...all, [this.machine]: list.slice(0, RECENT_MAX) });
+  }
+
+  worktree() {
+    openOverlay({ mod: "worktree", kind: "dialog", width: 460, height: 280,
+      props: { space: this.space ?? undefined, folder: this.folder ?? undefined, action: "new" } });
+    this.cancel();
+  }
+
   // Our tab: the shown one, and only if the launcher is all it holds.
   ownTab() {
     const tab = focused()?.tab;
@@ -51,6 +82,7 @@ export default class StudioLaunch extends View {
     const own = this.ownTab();
     const args = { space: this.space ?? undefined, folder: this.folder ?? undefined };
     if (c.run) Object.assign(args, { name: c.name, argv: c.run });
+    this.remember();
     run("tab.new", args);
     if (own) run("tab.close", { id: own, confirmed: true });
   }
@@ -88,6 +120,7 @@ export default class StudioLaunch extends View {
     const t = theme();
     const list = this.choices();
     if (this.sel >= list.length) this.sel = 0;
+    const recent = this.recents();
     const key = (k) => div().px(5).py(1).rounded(4).bg(t.raised).text_color(t.muted).child(k);
     return v_flex()
       .id("launch")
@@ -123,7 +156,18 @@ export default class StudioLaunch extends View {
               this.handle.focus();
               c.notify();
             }))
-            .child("Change…"))))
+            .child("Change…"))
+          .child(div().id("launch-worktree").px(6).py(1).rounded(6).text_color(t.accent).cursor_pointer()
+            .hover((s) => s.bg(t.hover))
+            .on_click(() => this.worktree())
+            .child("New worktree…")))
+        .when(recent.length > 0, (el) => el.child(h_flex().pt(6).gap(6).flex_wrap().justify_center().max_w(700)
+          .children(recent.map((f, i) => div().id(`launch-recent-${i}`).px(10).py(3).rounded(999)
+            .bg(t.raised).text_size(12).text_color(t.muted).cursor_pointer()
+            .hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .tooltip(this.pretty(f))
+            .on_click((_e, cx) => { this.folder = f; this.handle.focus(); cx.notify(); })
+            .child(f.split("/").pop() || f))))))
       .child(h_flex().gap(14).flex_wrap().justify_center().max_w(860).px(24)
         .children(list.map((c, i) => this.tile(t, c, i))))
       .child(h_flex().gap(14).items_center().text_size(11.5).text_color(t.dim)
