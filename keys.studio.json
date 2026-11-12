@@ -1,5 +1,6 @@
 {
   "layout:studio": {
-    "cmd-b": "studio-dock.toggle"
+    "cmd-b": "studio-dock.toggle",
+    "cmd-k": "mod.open:studio-palette"
   }
 }
