@@ -112,8 +112,10 @@ export default class GigiDock extends View {
             .when(needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(this.shortcut(i + 1))))
             .when(hovered, (el) => el
               .child(this.iconButton(t, `dock-tab-${s.id}`, "+", () => {
+                const active = s.tabs.find((c) => c.active) ?? s.tabs[0];
+                const lead = panes().find((p) => p.tab === active?.id && p.focused) ?? panes().find((p) => p.tab === active?.id && p.cwd);
                 run("space.select", { id: s.id });
-                openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 });
+                run("tab.new", { space: s.id, name: "New tab", mod: "studio-launch", props: { space: s.id, folder: lead?.cwd ?? s.folder ?? undefined } });
               }))
               .child(this.iconButton(t, `dock-close-${s.id}`, "×", () => run("space.close", { id: s.id })))))
         .when(open && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
