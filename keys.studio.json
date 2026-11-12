@@ -1,0 +1,5 @@
+{
+  "layout:studio": {
+    "cmd-b": "studio-dock.toggle"
+  }
+}

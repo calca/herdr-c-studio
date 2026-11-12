@@ -1,0 +1,117 @@
+{
+  "id": "root",
+  "type": "column",
+  "resizable": false,
+  "theme": {
+    "light": "macos-light",
+    "dark": "macos-dark"
+  },
+  "font": "SF Mono",
+  "font_size": 14,
+  "ui_font": "Geist",
+  "background": "canvas",
+  "titlebar": "none",
+  "traffic_lights": [
+    16,
+    16
+  ],
+  "terminal_padding": [
+    16,
+    14
+  ],
+  "children": [
+    {
+      "id": "tabs",
+      "type": "block",
+      "content": {
+        "mod": "studio-tabs"
+      },
+      "size": {
+        "px": 46
+      },
+      "window_drag": true
+    },
+    {
+      "id": "work-body",
+      "type": "row",
+      "resizable": false,
+      "padding": [
+        10,
+        10
+      ],
+      "gap": 10,
+      "floating": [
+        {
+          "id": "dock",
+          "content": {
+            "mod": "studio-dock"
+          },
+          "edge": "left",
+          "align": "start",
+          "peek": 52
+        }
+      ],
+      "children": [
+        {
+          "id": "sidebar",
+          "type": "column",
+          "size": {
+            "px": 56
+          },
+          "resizable": false,
+          "children": [
+            {
+              "id": "dock-docked",
+              "type": "block",
+              "content": {
+                "mod": "studio-dock",
+                "props": {
+                  "docked": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "main",
+          "type": "block",
+          "content": {
+            "tab": "active",
+            "pane": {
+              "header": {
+                "content": {
+                  "mod": "pane"
+                },
+                "reveal": "always",
+                "height": 30,
+                "position": "top"
+              },
+              "background": "background",
+              "border": {
+                "width": 1,
+                "color": "border"
+              },
+              "focus": {
+                "width": 1,
+                "color": "accent"
+              },
+              "radius": 14,
+              "gap": 10,
+              "lone": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "type": "block",
+      "content": {
+        "mod": "studio-status"
+      },
+      "size": {
+        "px": 26
+      }
+    }
+  ]
+}
