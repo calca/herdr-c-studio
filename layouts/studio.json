@@ -10,6 +10,7 @@
   "font_size": 14,
   "ui_font": "Geist",
   "background": "canvas",
+  "toast": "studio-toast",
   "titlebar": "none",
   "traffic_lights": [
     16,

@@ -54,7 +54,16 @@ export default class StudioPalette extends View {
       kind: "tab", label: name, sub: w.name, status: c.status, here: w.active && c.active,
       go: () => run("tab.select", { id: c.id }),
     }));
-    const acts = ACTIONS.map((a) => ({ kind: "action", ...a }));
+    const rank = { blocked: 0, done: 1, working: 2 };
+    tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
+    const spaceItems = spaces().map((w) => ({
+      kind: "action", label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
+    }));
+    const known = (shared("new-menu.agents") ?? {})[""] ?? [];
+    const agentItems = known.filter((a) => a.installed).map((a) => ({
+      kind: "action", label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
+    }));
+    const acts = [...spaceItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
     const list = [...tabs, ...acts];
     if (!words.length) return list;

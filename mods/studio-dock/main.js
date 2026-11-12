@@ -56,7 +56,8 @@ export default class GigiDock extends View {
 
   dot(t, status, size = 8) {
     if (status === "working") return svg("mods/workspace-chrome/spinner.svg").size(size + 4).flex_none().text_color(t.working).spin(900);
-    if (status === "blocked" || status === "done") return div().size(size).flex_none().rounded(size / 2).bg(t[status]);
+    if (status === "blocked") return div().size(size).flex_none().rounded(size / 2).bg(t.blocked).loop("opacity", { from: 0.35, to: 1, period: 1400 });
+    if (status === "done") return div().size(size).flex_none().rounded(size / 2).bg(t.done);
     return div().size(size).flex_none();
   }
 
@@ -68,10 +69,15 @@ export default class GigiDock extends View {
       .child(glyph);
   }
 
-  render() {
+  render(cx) {
     const t = theme();
     const pinned = shared("dock.pinned") === true;
-    if (this.docked !== pinned) return div();
+    if (this.docked !== pinned) { this.wasShown = false; return div(); }
+    if (this.docked && !this.wasShown) {
+      this.wasShown = true;
+      this.faded = true;
+      cx.timer.after(30, (c) => { this.faded = false; c.notify(); });
+    }
     const open = this.docked || (placement()?.hovered ?? false);
     const list = agents();
     const all = spaces();
@@ -95,7 +101,8 @@ export default class GigiDock extends View {
                 .text_color(s.active ? t.foreground : t.dim)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
-                div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover))))
+                div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover)
+                  .when(s.status === "working" || s.status === "blocked", (d) => d.loop("opacity", { from: 0.35, to: 1, period: s.status === "blocked" ? 1400 : 1800 })))))
             .child(v_flex().flex_1().min_w(0).gap(1)
               .child(div().truncate().text_size(14.5).font_medium().text_color(s.active ? t.foreground : t.muted).child(s.name))
               .child(div().truncate().text_size(11.5).text_color(t.dim).child(sub)))
@@ -137,7 +144,7 @@ export default class GigiDock extends View {
 
     
     return v_flex().w(OPEN_W).py(10).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.h_full().bg(t.chrome).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.chrome).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
       .child(
         h_flex().id("dock-head").h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.dim)))
