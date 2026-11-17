@@ -189,7 +189,7 @@ export default class StudioDock extends View {
 
     return v_flex().id("dock-root").w(SIDEBAR.open).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.chrome).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.popover).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
       .child(
         h_flex().id("dock-head").h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.dim)))
