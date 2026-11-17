@@ -6,7 +6,7 @@
 
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { panes, props, run, theme, home, layout, exec } from "herdr";
+import { panes, props, run, theme, home, layout, exec, spaces } from "herdr";
 
 // Match the first visible tab frame, including the active child of a stack.
 function paneFrame(node) {
@@ -31,13 +31,15 @@ function icon(p, size, color) {
 
 const MOD_TITLES = { "studio-launch": "New tab" };
 
-// cwd -> its git repo's top folder ("" when not in a repo). Shared by every header.
+// machine + cwd -> { root: the git repo's top folder ("" when not in a repo),
+// at: when it was asked }. Shared by every header; asked again after ROOT_TTL.
 const ROOTS = new Map();
+const ROOT_TTL = 30000;
 
 // Inside a repo: "repo/sub/dir"; elsewhere: the path with ~ for home.
-function folder(cwd) {
+function folder(cwd, machine) {
   if (!cwd) return "";
-  const root = ROOTS.get(cwd);
+  const root = ROOTS.get(`${machine ?? ""}\u0000${cwd}`)?.root;
   if (root) {
     const name = root.split("/").pop();
     return cwd === root ? name : name + cwd.slice(root.length);
@@ -67,13 +69,15 @@ export default class Pane extends View {
       .child(svg(`mods/studio-pane/${icon}.svg`).size(16));
   }
 
-  root(cwd, cx) {
-    if (!cwd || ROOTS.has(cwd)) return;
-    ROOTS.set(cwd, "");
+  root(cwd, machine, cx) {
+    if (!cwd) return;
+    const key = `${machine ?? ""}\u0000${cwd}`, had = ROOTS.get(key);
+    if (had && Date.now() - had.at < ROOT_TTL) return;
+    ROOTS.set(key, { root: had?.root ?? "", at: Date.now() });
     cx.spawn(async (c) => {
       try {
-        const r = await exec("git", ["--no-optional-locks", "rev-parse", "--show-toplevel"], { cwd, timeout: 3000 });
-        if (r.code === 0) ROOTS.set(cwd, r.stdout.trim());
+        const r = await exec("git", ["--no-optional-locks", "rev-parse", "--show-toplevel"], { cwd, on: machine, timeout: 3000 });
+        ROOTS.set(key, { root: r.code === 0 ? r.stdout.trim() : "", at: Date.now() });
       } catch {}
       c.notify();
     });
@@ -83,7 +87,8 @@ export default class Pane extends View {
     const t = theme();
     const p = this.me();
     if (!p) return div();
-    this.root(p.cwd, cx);
+    const machine = spaces().find((s) => s.tabs.some((c) => c.id === p.tab))?.machine ?? null;
+    this.root(p.cwd, machine, cx);
     const name = (p.mod && MOD_TITLES[p.mod]) || ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
     const pic = icon(p.program, 16, t.dim);
     const st = p.status;
@@ -104,7 +109,7 @@ export default class Pane extends View {
       .on_click(() => run("pane.focus", { pane }))
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_none().truncate().max_w(260).font_medium().text_color(t.foreground).child(name))
-      .child(div().flex_shrink_1().min_w(0).truncate().text_color(t.dim).child(folder(p.cwd)))
+      .child(div().flex_shrink_1().min_w(0).truncate().text_color(t.dim).child(folder(p.cwd, machine)))
       .when(Boolean(p.branch), el => el.child(h_flex().flex_none().gap(4).items_center().text_color(t.dim)
         .child(svg("mods/workspace-chrome/git-branch.svg").size(12)).child(div().max_w(180).truncate().child(p.branch))))
       .child(div().flex_1())

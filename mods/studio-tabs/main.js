@@ -6,6 +6,7 @@ import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
 const PANEL_MIN = 1100;
+const SWIPE = 80;
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
 
 export default class Tabs extends View {
@@ -75,6 +76,18 @@ export default class Tabs extends View {
     });
   }
 
+  // A wheel notch switches one tab; a trackpad needs SWIPE px of vertical travel
+  // per tab, counted afresh each gesture, so a flick doesn't fly past several.
+  wheel(e) {
+    if (Math.abs(e.delta.y) <= Math.abs(e.delta.x)) return;
+    if (e.delta_lines) return run(e.delta.y > 0 ? "tab.prev" : "tab.next");
+    if (e.touch_phase === "started") this.swipe = 0;
+    this.swipe = (this.swipe ?? 0) + e.delta.y;
+    if (Math.abs(this.swipe) < SWIPE) return;
+    run(this.swipe > 0 ? "tab.prev" : "tab.next");
+    this.swipe = 0;
+  }
+
   autoDock(size) {
     const wide = this.wide === undefined ? size.width >= WIDE_AT : size.width >= (this.wide ? NARROW_AT : WIDE_AT);
     if (wide === this.wide) return;
@@ -133,7 +146,7 @@ export default class Tabs extends View {
         if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size;
       })
       .on_mouse_up("left", () => { this.pressed = null; })
-      .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
+      .on_scroll_wheel(e => this.wheel(e))
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
         .on_size_change((_size, cx) => { if (active >= 0) { this.scroll.scroll_to_item(active); cx.notify(); } })
         .children(shown.map(item)))

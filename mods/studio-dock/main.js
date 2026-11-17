@@ -1,7 +1,7 @@
-import { View, div, svg } from "gpui-kit";
+import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys } from "herdr";
-import { SIDEBAR, pinDock, tabName, newTerminal } from "./kit.js";
+import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -94,6 +94,7 @@ export default class StudioDock extends View {
       const needs = mine.filter((a) => a.status === "blocked").length;
       const hovered = open && this.hover === s.id;
       const folded = (shared(FOLDED) ?? []).includes(s.id);
+      const color = spaceColor(t, s);
       const sub = [s.branch, `${s.tabs.length} tab${s.tabs.length === 1 ? "" : "s"}`, mine.length ? `${mine.length} agent${mine.length === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ");
       return v_flex().id(`dock-${s.id}`).gap(4).pb(6)
         .on_hover((h, c) => { this.hover = h ? s.id : (this.hover === s.id ? null : this.hover); c.notify(); })
@@ -108,8 +109,8 @@ export default class StudioDock extends View {
             .on_mouse_down("right", () => run("space.rename", { id: s.id }))
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
-                .when(s.active, (d) => d.bg(t.selected))
-                .text_color(s.active ? t.foreground : t.dim)
+                .when(s.active, (d) => d.bg(color + "33"))
+                .text_color(color)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
                 div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover)
@@ -131,20 +132,34 @@ export default class StudioDock extends View {
               }))
               .child(this.iconButton(t, `dock-close-${s.id}`, "×", () => run("space.close", { id: s.id })))))
         .when(open && !folded && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
-          const { name } = tabName(c);
+          const { name, program } = tabName(c);
           const st = c.status ? (STATUS[c.status] ?? STATUS.idle) : null;
           const since = c.status === "working" ? c.working_since : c.changed_at;
           const focused = s.active && c.active;
-          return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(30).mr(4).px(10).gap(10).items_center().rounded(8)
+          const over = this.hoverTab === c.id;
+          const dropHere = this.drag && this.drag.space === s.id && this.drag.tab !== c.id && over;
+          return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
             .relative().hover((x) => x.bg(t.hover))
             .when(focused, (el) => el.bg(t.selected).font_semibold())
+            .when(dropHere, (el) => el.bg(t.hover))
+            .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
             .on_mouse_down("left", (e) => {
+              this.drag = { space: s.id, tab: c.id };
               run("space.select", { id: s.id });
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });
             })
+            // Drop on another tab of the same space: take its place.
+            .on_mouse_up("left", () => {
+              const d = this.drag; this.drag = null;
+              if (d && d.space === s.id && d.tab !== c.id) run("tab.move", { id: d.tab, index: s.tabs.findIndex((x) => x.id === c.id) + 1 });
+            })
             .child(this.dot(t, c.status, 6))
+            .when(Boolean(program?.icon), (el) => el.child(program.tint
+              ? svg(program.icon).size(15).flex_none().text_color(focused ? t.foreground : t.muted)
+              : image(program.icon).size(15).flex_none()))
             .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
-            .when(Boolean(st), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(since ? `${st.label} · ${ago(since)}` : st.label)));
+            .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => run("tab.close", { id: c.id }))))
+            .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
         })));
     };
 
@@ -154,7 +169,8 @@ export default class StudioDock extends View {
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
-    return v_flex().w(SIDEBAR.open).py(10).px(open ? 10 : 4).gap(6)
+    return v_flex().id("dock-root").w(SIDEBAR.open).py(10)
+      .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
       .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.chrome).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
       .child(
         h_flex().id("dock-head").h(30).px(8).items_center().gap(10)

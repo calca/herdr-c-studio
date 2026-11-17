@@ -3,6 +3,7 @@ import { h_flex } from "gpui-base";
 import { spaces, agents, panes, focused, exec, theme, run, window, keys } from "herdr";
 import { togglePanel } from "./kit.js";
 
+const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
 
 export default class WorkspaceStatus extends View {
@@ -24,14 +25,20 @@ export default class WorkspaceStatus extends View {
     if (!at.cwd) return;
     this.busy = true;
     cx.spawn(async (c) => {
+      const opts = { cwd: at.cwd, on: at.on, timeout: 4000 };
       try {
-        const r = await exec("git", [...READ, "diff", "--shortstat", "HEAD"], { cwd: at.cwd, on: at.on, timeout: 4000 });
+        let r = await exec("git", [...READ, "diff", "--shortstat", "HEAD"], opts);
+        // No commit yet: everything tracked counts as added.
+        if (r.code !== 0) r = await exec("git", [...READ, "diff", "--shortstat", EMPTY_TREE], opts);
         const out = r.code === 0 ? r.stdout : "";
         const plus = Number(/(\d+) insertion/.exec(out)?.[1] ?? 0), minus = Number(/(\d+) deletion/.exec(out)?.[1] ?? 0);
-        const next = plus || minus ? { plus, minus } : null;
-        this.at = JSON.stringify(at);
+        const u = r.code === 0 ? await exec("git", [...READ, "ls-files", "--others", "--exclude-standard"], opts) : null;
+        const fresh = u?.code === 0 ? u.stdout.split("\n").filter(Boolean).length : 0;
+        const next = plus || minus || fresh ? { plus, minus, fresh } : null;
         if (JSON.stringify(next) !== JSON.stringify(this.diff)) { this.diff = next; c.notify(); }
       } catch {}
+      // Even after a failure, so a slow repo is retried by the timer, not on every render.
+      this.at = JSON.stringify(at);
       this.busy = false;
     });
   }
@@ -82,8 +89,10 @@ export default class WorkspaceStatus extends View {
       .when(Boolean(space?.branch), el => el.child(click(div(), "status-branch", (cx) => this.copyBranch(space.branch, cx))
         .flex().items_center().child(label("branch", this.copied ? "Copied" : space.branch))))
       .when(Boolean(this.diff), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => togglePanel("changes"))
-        .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
-        .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`))))
+        .when(this.diff.plus > 0 || this.diff.minus > 0, (d) => d
+          .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
+          .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`)))
+        .when(this.diff.fresh > 0, (d) => d.child(div().text_color(t.dim).child(`${this.diff.fresh} new`)))))
       .child(div().flex_1())
       .when(working > 0, el => el.child(pill("status-working", t.working, `${working} working`, (a) => a.status === "working")))
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))
