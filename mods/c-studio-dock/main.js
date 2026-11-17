@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys } from "herdr";
-import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor, setSpaceColor, MARK, SPACE_COLORS } from "./kit.js";
+import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -101,6 +101,12 @@ export default class StudioDock extends View {
         .child(
           h_flex().id(`dock-row-${s.id}`).relative().h(46).px(8).gap(10).items_center().rounded(12)
             .hover((x) => x.bg(t.hover))
+            // A dock tab dropped on another space moves there.
+            .when(Boolean(this.drag && this.drag.space !== s.id && hovered), (el) => el.bg(color + "33"))
+            .on_mouse_up("left", (_e, cx) => {
+              const d = this.drag; this.drag = null;
+              if (d && d.space !== s.id) cx.spawn(async (c) => { await moveTab(d.tab, s.id); c.notify(); });
+            })
             .on_mouse_down("left", (e) => {
               if (e.click_count === 2) return run("space.rename", { id: s.id });
               if (s.active && open && s.tabs.length > 0) return this.toggleFold(s.id);
@@ -168,7 +174,7 @@ export default class StudioDock extends View {
               ? svg(program.icon).size(15).flex_none().text_color(focused ? t.foreground : t.muted)
               : image(program.icon).size(15).flex_none()))
             .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
-            .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => run("tab.close", { id: c.id }))))
+            .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => closeTab(c.id))))
             .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
         })));
     };

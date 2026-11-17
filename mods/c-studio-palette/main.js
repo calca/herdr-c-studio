@@ -2,7 +2,7 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
-import { togglePanel, pinDock, tabName, openLauncher, newTerminal } from "./kit.js";
+import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab } from "./kit.js";
 
 const ROW_H = 44;
 const RECENT = "c-studio-palette.recent";
@@ -38,7 +38,7 @@ const ACTIONS = [
   { label: "Split down", hint: "⇧⌘D", icon: "▤", go: () => run("pane.split", { direction: "down" }) },
   { label: "Zoom pane", hint: "⇧⌘↩", icon: "⤢", go: () => run("pane.zoom") },
   { label: "Close pane", hint: "⇧⌘W", icon: "✕", go: () => run("pane.close") },
-  { label: "Close tab", hint: "⌘W", icon: "✕", go: () => run("tab.close") },
+  { label: "Close tab", hint: "⌘W", icon: "✕", go: () => closeTab(focused()?.tab) },
   { label: "Rename tab", icon: "✎", go: () => run("tab.rename") },
   { label: "Rename space", icon: "✎", go: () => run("space.rename") },
   { label: "Toggle dock", hint: "⌘B", icon: "◧", go: () => pinDock(shared("dock.pinned") !== true) },
@@ -90,11 +90,16 @@ export default class StudioPalette extends View {
     const spaceItems = spaces().map((w) => ({
       kind: "action", key: `space:${w.id}`, label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
     }));
+    const f = focused();
+    const here = spaces().find((w) => w.id === f?.space);
+    const moveItems = f?.tab ? spaces().filter((w) => w.id !== here?.id && (w.machine ?? null) === (here?.machine ?? null)).map((w) => ({
+      kind: "action", key: `move:${w.id}`, label: `Move tab to ${w.name}`, sub: "Space", icon: "→", go: () => setShared("c-studio.move", { tab: f.tab, space: w.id }),
+    })) : [];
     const known = (shared("new-menu.agents") ?? {})[""] ?? [];
     const agentItems = known.filter((a) => a.installed).map((a) => ({
       kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
     }));
-    const acts = [...spaceItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
+    const acts = [...spaceItems, ...moveItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
     const list = this.scope ? tabs : [...tabs, ...acts];
     if (!words.length && this.scope) return list;
@@ -119,7 +124,7 @@ export default class StudioPalette extends View {
   }
 
   remember(item) {
-    const keep = (shared(RECENT) ?? []).filter((k) => k !== item.key && !k.startsWith("tab:"));
+    const keep = (shared(RECENT) ?? []).filter((k) => k !== item.key && !k.startsWith("tab:") && !k.startsWith("move:"));
     setShared(RECENT, [item.key, ...keep].slice(0, RECENT_MAX));
   }
 
@@ -168,7 +173,7 @@ export default class StudioPalette extends View {
         if (e.modifiers.platform && sel?.kind === "tab" && k === "backspace") {
           cx.stop_propagation();
           this.close();
-          return run("tab.close", { id: sel.id });
+          return closeTab(sel.id);
         }
         if (e.modifiers.platform && sel?.kind === "tab" && k === "r") {
           cx.stop_propagation();

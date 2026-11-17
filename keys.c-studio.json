@@ -5,6 +5,7 @@
     "cmd-t": "c-studio-tabs.new",
     "cmd-shift-e": "c-studio-tabs.files",
     "cmd-shift-g": "c-studio-tabs.changes",
-    "cmd-p": "mod.open:c-studio-palette"
+    "cmd-p": "mod.open:c-studio-palette",
+    "cmd-w": "c-studio-tabs.close"
   }
 }

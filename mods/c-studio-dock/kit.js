@@ -2,7 +2,7 @@
 // folder, so every mod keeps an identical copy: edit one, then run the repo's
 // sync.sh, which refuses to continue while the copies differ.
 
-import { run, panes, layout, shared, setShared, home, spaces } from "herdr";
+import { run, panes, layout, shared, setShared, home, spaces, openOverlay, hc, exec } from "herdr";
 
 export const SIDEBAR = { open: 296, peek: 56 };
 
@@ -86,4 +86,54 @@ export function newTerminal(space, folder) {
 
 export function openLauncher(space, folder) {
   run("tab.new", { space: space ?? undefined, name: "New tab", mod: "c-studio-launch", props: { space: space ?? undefined, folder: folder ?? undefined } });
+}
+
+// What would stop if the tab closed: terminals running something other than a shell.
+export function busyPanes(id, all = panes()) {
+  return all.filter((p) => p.tab === id && p.terminal && p.program && !p.program.shell);
+}
+
+// A plain shell closes at once; a running program or agent asks: park (keeps running) or close.
+export function closeTab(id) {
+  if (!id) return;
+  if (!busyPanes(id).length) return run("tab.close", { id });
+  openOverlay({ mod: "c-studio-close", kind: "dialog", width: 440, height: 210, props: { tab: id } });
+}
+
+const pause = () => exec("sleep", ["0.15"]).catch(() => {});
+const local = (id) => id.split("/").pop();
+
+// Herdr can't move a tab to another space, but it shows a terminal where its
+// herdr.space/herdr.tab labels say. So: park the terminals (the panes go, the
+// programs keep running), relabel them to a fresh tab in the target space and
+// keep them again; the name comes back with a rename. Mod panes stay behind.
+export async function moveTab(tabId, spaceId) {
+  const from = spaces().find((s) => s.tabs.some((c) => c.id === tabId));
+  const to = spaces().find((s) => s.id === spaceId);
+  const tab = from?.tabs.find((c) => c.id === tabId);
+  if (!tab || !to || from.id === to.id || (from.machine ?? null) !== (to.machine ?? null)) return false;
+  const terms = panes().filter((p) => p.tab === tabId && p.terminal).map((p) => p.terminal);
+  if (!terms.length) return false;
+  const fresh = "tb" + Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
+  for (const t of terms) run("terminal.park", { terminal: t });
+  for (const t of terms) {
+    for (let i = 0; i < 40; i++) {
+      const r = await hc(["get", t, "--json"]);
+      if (r.code === 0 && JSON.parse(r.stdout).keep === false) break;
+      await pause();
+    }
+    await hc(["label", t, `herdr.space=${local(to.id)}`, `herdr.tab=${fresh}`]);
+    await hc(["keep", t]);
+  }
+  for (let i = 0; i < 40; i++) {
+    const landed = panes().find((p) => p.terminal === terms[0]);
+    if (landed) {
+      if (tab.named) run("tab.rename", { id: landed.tab, name: tab.name });
+      run("tab.select", { id: landed.tab });
+      run("space.select", { id: to.id });
+      return true;
+    }
+    await pause();
+  }
+  return false;
 }

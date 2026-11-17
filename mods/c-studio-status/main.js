@@ -1,7 +1,7 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared, notify } from "herdr";
-import { togglePanel } from "./kit.js";
+import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared, setShared, notify } from "herdr";
+import { togglePanel, moveTab } from "./kit.js";
 
 const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 // Space color -> theme variant, so the focus border (accent) follows the space.
@@ -107,6 +107,12 @@ export default class WorkspaceStatus extends View {
 
   render(cx) {
     const t = theme();
+    // Tab moves asked for by short-lived overlays (the palette) run here, where a copy stays.
+    const move = shared("c-studio.move");
+    if (move) {
+      setShared("c-studio.move", null);
+      cx.spawn(async (c) => { await moveTab(move.tab, move.space); c.notify(); });
+    }
     if (JSON.stringify(this.where()) !== this.at) this.refresh(cx);
     const space = spaces().find(s => s.active);
     const list = agents();

@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand } from "herdr";
-import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor } from "./kit.js";
+import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -16,6 +16,7 @@ export default class Tabs extends View {
       for (;;) {
         const cmd = await nextCommand();
         if (cmd === "new") this.newTab();
+        else if (cmd === "close") closeTab(focused()?.tab);
         else if (cmd === "files" || cmd === "changes") togglePanel(cmd);
         c.notify();
       }
@@ -138,7 +139,7 @@ export default class Tabs extends View {
         .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(16).text_color(t.muted) : image(program.icon).size(16)))
         .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name)))
         .when(c.active, el => el.bg(tint).font_semibold())
-        .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(13))));
+        .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); closeTab(c.id); }).child(svg("mods/pane/close.svg").size(13))));
     };
     const w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
