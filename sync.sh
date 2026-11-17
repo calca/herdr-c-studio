@@ -15,7 +15,7 @@ for k in "${kits[@]}"; do
 done
 
 cp "$SRC/layouts/studio.json" "$DEST/layouts/"
-cp "$SRC"/themes/{macos,claude}-{dark,light}.json "$DEST/themes/"
+cp "$SRC"/themes/{macos,claude}-{dark,light}.json "$SRC"/themes/claude-{dark,light}-*.json "$DEST/themes/"
 for m in "$SRC"/mods/studio-*/; do
   name="$(basename "$m")"
   rsync -a --delete --exclude gpui-kit.d.ts "$m" "$DEST/mods/$name/"

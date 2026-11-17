@@ -1,15 +1,19 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, panes, focused, exec, theme, run, window, keys } from "herdr";
+import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared } from "herdr";
 import { togglePanel } from "./kit.js";
 
 const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+// Space color -> theme variant, so the focus border (accent) follows the space.
+const ACCENT = { ansi6: "teal", ansi3: "orange", ansi4: "blue", ansi5: "violet", ansi2: "green", ansi1: "pink" };
+
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
 
 export default class WorkspaceStatus extends View {
   init(_props, cx) {
     this.diff = null;
     cx.timer.every(5000, (c) => this.refresh(c));
+    cx.timer.every(250, () => this.syncAccent());
   }
 
   // Where git runs: the focused pane's folder, as the Changes panel does.
@@ -69,6 +73,17 @@ export default class WorkspaceStatus extends View {
     this.copied = true;
     cx.notify();
     cx.timer.after(1200, (c) => { this.copied = false; c.notify(); });
+  }
+
+  syncAccent() {
+    const space = spaces().find((s) => s.active);
+    const name = space && space.name !== "~" ? ACCENT[shared("space.colors")?.[space.id]] : null;
+    const key = name ?? "";
+    if (key === this.accent) return;
+    this.accent = key;
+    const suffix = name ? `-${name}` : "";
+    run("app.theme", { name: `claude-dark${suffix}` });
+    run("app.theme", { name: `claude-light${suffix}` });
   }
 
   render(cx) {
