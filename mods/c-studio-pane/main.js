@@ -1,5 +1,5 @@
 // A pane's header, for layouts that frame their panes:
-//   { "tab": "active", "pane": { "header": { "content": { "mod": "studio-pane" } } } }
+//   { "tab": "active", "pane": { "header": { "content": { "mod": "c-studio-pane" } } } }
 // Shows the program's icon (the app's program table), the agent's name or
 // the terminal's title, the folder, and the agent's status; buttons split, zoom and close
 // this pane. Props from the app: { pane, terminal }. Click: focus the pane.
@@ -29,7 +29,7 @@ function icon(p, size, color) {
   return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
-const MOD_TITLES = { "studio-launch": "New tab" };
+const MOD_TITLES = { "c-studio-launch": "New tab" };
 
 // machine + cwd -> { root: the git repo's top folder ("" when not in a repo),
 // at: when it was asked }. Shared by every header; asked again after ROOT_TTL.
@@ -66,7 +66,7 @@ export default class Pane extends View {
         cx.stop_propagation();
         run(command, args);
       })
-      .child(svg(`mods/studio-pane/${icon}.svg`).size(16));
+      .child(svg(`mods/c-studio-pane/${icon}.svg`).size(16));
   }
 
   root(cwd, machine, cx) {

@@ -52,7 +52,7 @@ export default class WorkspaceStatus extends View {
   hint(t) {
     const mac = window()?.platform === "macos";
     const mod = { cmd: mac ? "⌘" : "Ctrl+", ctrl: mac ? "⌃" : "Ctrl+", shift: mac ? "⇧" : "Shift+", alt: mac ? "⌥" : "Alt+", option: mac ? "⌥" : "Alt+" };
-    const b = keys().find((k) => k.action === "mod.open:studio-palette") ?? keys().find((k) => k.section === "global" && k.action === "app.palette");
+    const b = keys().find((k) => k.action === "mod.open:c-studio-palette") ?? keys().find((k) => k.section === "global" && k.action === "app.palette");
     const parts = b && b.keys.endsWith("--") ? [...b.keys.slice(0, -2).split("-"), "-"] : b?.keys.split("-");
     const key = parts && parts.map((p) => mod[p.toLowerCase()] ?? p.toUpperCase()).join("");
     return key ? `${key}  search` : "search";
@@ -82,8 +82,8 @@ export default class WorkspaceStatus extends View {
     if (key === this.accent) return;
     this.accent = key;
     const suffix = name ? `-${name}` : "";
-    run("app.theme", { name: `claude-dark${suffix}` });
-    run("app.theme", { name: `claude-light${suffix}` });
+    run("app.theme", { name: `c-studio-dark${suffix}` });
+    run("app.theme", { name: `c-studio-light${suffix}` });
   }
 
   render(cx) {
@@ -113,7 +113,7 @@ export default class WorkspaceStatus extends View {
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))
       .when(idle > 0 || list.length === 0, el => el.child(pill("status-idle", t.dim, list.length === 0 ? "no agents" : `${idle} idle`,
         (a) => a.status !== "working" && a.status !== "blocked")))
-      .child(click(div(), "status-palette", () => run("mod.open", { name: "studio-palette" }))
+      .child(click(div(), "status-palette", () => run("mod.open", { name: "c-studio-palette" }))
         .flex().items_center().text_color(t.dim).child(this.hint(t)));
   }
 }

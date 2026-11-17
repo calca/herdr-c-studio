@@ -1,4 +1,4 @@
-// Shared by the Studio mods. Herdr only resolves imports inside a mod's own
+// Shared by the C-Studio mods. Herdr only resolves imports inside a mod's own
 // folder, so every mod keeps an identical copy: edit one, then run the repo's
 // sync.sh, which refuses to continue while the copies differ.
 
@@ -81,5 +81,5 @@ export function newTerminal(space, folder) {
 }
 
 export function openLauncher(space, folder) {
-  run("tab.new", { space: space ?? undefined, name: "New tab", mod: "studio-launch", props: { space: space ?? undefined, folder: folder ?? undefined } });
+  run("tab.new", { space: space ?? undefined, name: "New tab", mod: "c-studio-launch", props: { space: space ?? undefined, folder: folder ?? undefined } });
 }

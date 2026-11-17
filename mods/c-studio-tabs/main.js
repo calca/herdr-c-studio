@@ -99,7 +99,7 @@ export default class Tabs extends View {
     const t = theme();
     const space = spaces().find(p => p.active);
     this.syncPanel(space, PANELS.map(([id]) => id));
-    if (shared("dock.pinned") === true) return h_flex().id("studio-tabs-pinned").size_full().pt(10).pr(16).gap(4).items_center().justify_end()
+    if (shared("dock.pinned") === true) return h_flex().id("c-studio-tabs-pinned").size_full().pt(10).pr(16).gap(4).items_center().justify_end()
       .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
       .children(this.pills(t));
     const shown = space?.tabs ?? [];
@@ -140,7 +140,7 @@ export default class Tabs extends View {
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;
-    return h_flex().id("studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
+    return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
       .on_size_change((size, cx) => {
         this.autoDock(size);
         this.autoPanel(size);
@@ -153,8 +153,8 @@ export default class Tabs extends View {
         .children(shown.map(item)))
       .child(button("tab-new", "+", () => this.newTab()))
       .children(this.pills(t))
-      .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
-        .child(button("maximize", w.platform === "windows" ? svg(`mods/studio-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
-        .child(button("close-window", w.platform === "windows" ? svg("mods/studio-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));
+      .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
+        .child(button("maximize", w.platform === "windows" ? svg(`mods/c-studio-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
+        .child(button("close-window", w.platform === "windows" ? svg("mods/c-studio-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));
   }
 }

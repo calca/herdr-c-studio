@@ -6,7 +6,7 @@ import { h_flex, v_flex } from "gpui-base";
 import { props, theme, run, focused, panes, spaces, shared, setShared, knownAgents, pickFolder, home, nextCommand, openOverlay } from "herdr";
 
 const KNOWN = "new-menu.agents";
-const RECENT = "studio-launch.folders";
+const RECENT = "c-studio-launch.folders";
 const RECENT_MAX = 12;
 const CHIPS = 5;
 
@@ -46,7 +46,7 @@ export default class StudioLaunch extends View {
   // Folders to jump to: the last ones started in, then those open in other tabs.
   recents() {
     const h = home();
-    const open = panes().filter((p) => p.cwd && p.mod !== "studio-launch").map((p) => p.cwd);
+    const open = panes().filter((p) => p.cwd && p.mod !== "c-studio-launch").map((p) => p.cwd);
     const seen = new Set([this.folder ?? h, h]);
     const out = [];
     for (const f of [...((shared(RECENT) ?? {})[this.machine] ?? []), ...open]) {
@@ -75,7 +75,7 @@ export default class StudioLaunch extends View {
   ownTab() {
     const tab = focused()?.tab;
     const inTab = panes().filter((p) => p.tab === tab);
-    return inTab.length === 1 && inTab[0].mod === "studio-launch" ? tab : null;
+    return inTab.length === 1 && inTab[0].mod === "c-studio-launch" ? tab : null;
   }
 
   launch(c) {

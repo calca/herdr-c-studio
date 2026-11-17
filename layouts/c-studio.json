@@ -3,14 +3,14 @@
   "type": "column",
   "resizable": false,
   "theme": {
-    "light": "claude-light",
-    "dark": "claude-dark"
+    "light": "c-studio-light",
+    "dark": "c-studio-dark"
   },
   "font": "SF Mono",
   "font_size": 14,
   "ui_font": "Geist",
   "background": "canvas",
-  "toast": "studio-toast",
+  "toast": "c-studio-toast",
   "titlebar": "none",
   "traffic_lights": [
     18,
@@ -25,7 +25,7 @@
       "id": "tabs",
       "type": "block",
       "content": {
-        "mod": "studio-tabs"
+        "mod": "c-studio-tabs"
       },
       "size": {
         "px": 48
@@ -45,7 +45,7 @@
         {
           "id": "dock",
           "content": {
-            "mod": "studio-dock"
+            "mod": "c-studio-dock"
           },
           "edge": "left",
           "align": "start",
@@ -65,7 +65,7 @@
               "id": "dock-docked",
               "type": "block",
               "content": {
-                "mod": "studio-dock",
+                "mod": "c-studio-dock",
                 "props": {
                   "docked": true
                 }
@@ -81,7 +81,7 @@
             "pane": {
               "header": {
                 "content": {
-                  "mod": "studio-pane"
+                  "mod": "c-studio-pane"
                 },
                 "reveal": "always",
                 "height": 36,
@@ -147,7 +147,7 @@
       "id": "status",
       "type": "block",
       "content": {
-        "mod": "studio-status"
+        "mod": "c-studio-status"
       },
       "size": {
         "px": 36

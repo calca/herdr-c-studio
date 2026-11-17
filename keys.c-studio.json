@@ -1,0 +1,10 @@
+{
+  "layout:c-studio": {
+    "cmd-b": "c-studio-dock.toggle",
+    "cmd-k": "mod.open:c-studio-palette",
+    "cmd-t": "c-studio-tabs.new",
+    "cmd-shift-e": "c-studio-tabs.files",
+    "cmd-shift-g": "c-studio-tabs.changes",
+    "cmd-p": "mod.open:c-studio-palette"
+  }
+}
