@@ -45,6 +45,11 @@ export function tabName(tab, all = panes()) {
   return { name: tab.named ? tab.name : session ?? program?.name ?? "Terminal", program };
 }
 
+// A plain terminal tab, in the given folder (default: the focused terminal's).
+export function newTerminal(space, folder) {
+  run("tab.new", { space: space ?? undefined, folder: folder ?? undefined });
+}
+
 export function openLauncher(space, folder) {
   run("tab.new", { space: space ?? undefined, name: "New tab", mod: "studio-launch", props: { space: space ?? undefined, folder: folder ?? undefined } });
 }

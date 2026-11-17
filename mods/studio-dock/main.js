@@ -1,8 +1,10 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { spaces, agents, panes, theme, run, props, placement, shared, nextCommand, keys } from "herdr";
-import { SIDEBAR, pinDock, tabName, openLauncher } from "./kit.js";
+import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys } from "herdr";
+import { SIDEBAR, pinDock, tabName, newTerminal } from "./kit.js";
 
+
+const FOLDED = "dock.folded";
 
 const initial = (name) => (name || "?").trim().charAt(0).toUpperCase();
 
@@ -40,6 +42,12 @@ export default class StudioDock extends View {
 
   apply(pinned) {
     run("layout.resize", { id: "sidebar", px: pinned ? SIDEBAR.open : SIDEBAR.peek });
+  }
+
+  // Folded spaces hide their tab rows; remembered across copies and restarts.
+  toggleFold(id) {
+    const now = (shared(FOLDED) ?? []).filter((x) => spaces().some((s) => s.id === x));
+    setShared(FOLDED, now.includes(id) ? now.filter((x) => x !== id) : [...now, id]);
   }
 
   setPinned(v) {
@@ -85,13 +93,18 @@ export default class StudioDock extends View {
       const mine = list.filter((a) => a.space === s.id);
       const needs = mine.filter((a) => a.status === "blocked").length;
       const hovered = open && this.hover === s.id;
+      const folded = (shared(FOLDED) ?? []).includes(s.id);
       const sub = [s.branch, `${s.tabs.length} tab${s.tabs.length === 1 ? "" : "s"}`, mine.length ? `${mine.length} agent${mine.length === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ");
       return v_flex().id(`dock-${s.id}`).gap(4).pb(6)
         .on_hover((h, c) => { this.hover = h ? s.id : (this.hover === s.id ? null : this.hover); c.notify(); })
         .child(
           h_flex().id(`dock-row-${s.id}`).relative().h(46).px(8).gap(10).items_center().rounded(12)
             .hover((x) => x.bg(t.hover))
-            .on_mouse_down("left", (e) => run(e.click_count === 2 ? "space.rename" : "space.select", { id: s.id }))
+            .on_mouse_down("left", (e) => {
+              if (e.click_count === 2) return run("space.rename", { id: s.id });
+              if (s.active && open && s.tabs.length > 0) return this.toggleFold(s.id);
+              run("space.select", { id: s.id });
+            })
             .on_mouse_down("right", () => run("space.rename", { id: s.id }))
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
@@ -107,16 +120,17 @@ export default class StudioDock extends View {
             .when(needs > 0 && !hovered, (el) => el.child(
               div().flex_none().px(7).h(18).flex().items_center().rounded(9).bg(t.blocked + "26")
                 .text_size(11.5).font_semibold().text_color(t.blocked).child(`${needs} needs you`)))
-            .when(needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(this.shortcut(i + 1))))
+            .when(folded && needs === 0 && !hovered, (el) => el.child(div().flex_none().text_size(13).text_color(t.dim).child("›")))
+            .when(!folded && needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(this.shortcut(i + 1))))
             .when(hovered, (el) => el
               .child(this.iconButton(t, `dock-tab-${s.id}`, "+", () => {
                 const active = s.tabs.find((c) => c.active) ?? s.tabs[0];
                 const lead = panes().find((p) => p.tab === active?.id && p.focused) ?? panes().find((p) => p.tab === active?.id && p.cwd);
                 run("space.select", { id: s.id });
-                openLauncher(s.id, lead?.cwd ?? s.folder);
+                newTerminal(s.id, lead?.cwd ?? s.folder);
               }))
               .child(this.iconButton(t, `dock-close-${s.id}`, "×", () => run("space.close", { id: s.id })))))
-        .when(open && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
+        .when(open && !folded && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
           const { name } = tabName(c);
           const st = c.status ? (STATUS[c.status] ?? STATUS.idle) : null;
           const since = c.status === "working" ? c.working_since : c.changed_at;

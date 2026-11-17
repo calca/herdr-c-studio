@@ -2,7 +2,7 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
-import { togglePanel, pinDock, tabName, openLauncher } from "./kit.js";
+import { togglePanel, pinDock, tabName, openLauncher, newTerminal } from "./kit.js";
 
 const ROW_H = 44;
 const RECENT = "studio-palette.recent";
@@ -30,7 +30,8 @@ function score(query, text) {
 const VISIBLE = 8;
 
 const ACTIONS = [
-  { label: "New tab", hint: "⌘T", icon: "+", go: () => { const f = focused(); openLauncher(f?.space, f?.cwd); } },
+  { label: "New tab", hint: "⌘T", icon: "+", go: () => { const f = focused(); newTerminal(f?.space, f?.cwd); } },
+  { label: "New tab…", icon: "+", go: () => { const f = focused(); openLauncher(f?.space, f?.cwd); } },
   { label: "New space", hint: "⌘N", icon: "+", go: () => run("space.new") },
   { label: "Split right", hint: "⌘D", icon: "▥", go: () => run("pane.split", { direction: "right" }) },
   { label: "Split down", hint: "⇧⌘D", icon: "▤", go: () => run("pane.split", { direction: "down" }) },

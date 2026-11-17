@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, layout, focused, nextCommand } from "herdr";
-import { find, panelShown, showPanel, togglePanel, pinDock, tabName, openLauncher } from "./kit.js";
+import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -25,7 +25,7 @@ export default class Tabs extends View {
 
   newTab() {
     const f = focused();
-    openLauncher(f?.space, f?.cwd);
+    newTerminal(f?.space, f?.cwd);
   }
 
   // The side panel is remembered per space: switching shows that space's choice
