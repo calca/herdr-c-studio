@@ -85,6 +85,7 @@ export default class StudioDock extends View {
       cx.timer.after(30, (c) => { this.faded = false; c.notify(); });
     }
     const open = this.docked || (placement()?.hovered ?? false);
+    if (!open) this.picking = null;
     const list = agents();
     const all = spaces();
     const blockedTotal = list.filter((a) => a.status === "blocked").length;
@@ -98,6 +99,7 @@ export default class StudioDock extends View {
       const sub = [s.branch, `${s.tabs.length} tab${s.tabs.length === 1 ? "" : "s"}`, mine.length ? `${mine.length} agent${mine.length === 1 ? "" : "s"}` : null].filter(Boolean).join(" · ");
       return v_flex().id(`dock-${s.id}`).gap(4).pb(6)
         .on_hover((h, c) => { this.hover = h ? s.id : (this.hover === s.id ? null : this.hover); c.notify(); })
+        .when(this.picking === s.id, (el) => el.on_mouse_down_out((_e, cx) => { this.picking = null; cx.notify(); }))
         .child(
           h_flex().id(`dock-row-${s.id}`).relative().h(46).px(8).gap(10).items_center().rounded(12)
             .hover((x) => x.bg(t.hover))
