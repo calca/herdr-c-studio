@@ -95,6 +95,7 @@ export default class Pane extends View {
     const pane = p.pane;
     const bottom = paneFrame(layout())?.header?.position === "bottom";
     const grip = p.movable !== false && !p.zoomed && panes().filter((q) => q.tab === p.tab).length > 1;
+    const others = p.zoomed ? panes().filter((q) => q.tab === p.tab && q.pane !== pane) : [];
     return h_flex()
       .id(`pane-head-${pane}`)
       .size_full()
@@ -120,7 +121,16 @@ export default class Pane extends View {
         .when(st === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
         .when(st === "blocked", el => el.child(div().flex_none().px(6).h(20).flex().items_center().rounded(5).bg(t.blocked + "26").text_size(11.5).font_semibold().text_color(t.blocked).child("Needs you")))
         .when(st === "done", el => el.child(div().size(7).flex_none().rounded(4).bg(t.done)))
-        .when(this.hovered, el => el
+        // Always laid out, faded in on hover: nothing jumps when the pointer arrives.
+        .child(h_flex().id(`ph-btns-${pane}`).flex_none().gap(2).items_center()
+          .opacity(this.hovered ? 1 : 0).transition("opacity", { duration: 160, easing: "ease-out" })
+          // Zoomed: the other panes are hidden; say so, and click to bring them back.
+          .when(others.length > 0, el => el.child(h_flex().id(`ph-hidden-${pane}`).flex_none().h(22).px(8).mr(4).gap(5).items_center().rounded(11)
+            .bg(t.dim + "1F").text_size(12).text_color(t.muted).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground))
+            .on_click((_e, cx) => { cx.stop_propagation(); run("pane.zoom", { pane }); })
+            .children(others.slice(0, 3).map((q) => icon(q.program, 13, t.dim) ?? svg("mods/workspace-chrome/terminal.svg").size(13).flex_none().text_color(t.dim)))
+            .when(others.some((q) => q.status === "blocked"), (d) => d.child(div().size(6).rounded(3).bg(t.blocked)))
+            .child(`+${others.length} hidden`)))
           .child(this.button(t, `ph-r-${pane}`, "split-right", "pane.split", { direction: "right", pane }))
           .child(this.button(t, `ph-d-${pane}`, "split-down", "pane.split", { direction: "down", pane }))
           .child(this.button(t, `ph-z-${pane}`, p.zoomed ? "unzoom" : "zoom", "pane.zoom", { pane }))

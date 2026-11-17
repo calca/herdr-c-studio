@@ -116,6 +116,7 @@ export default class Tabs extends View {
       .on_mouse_down("left", stop).on_click(action).child(label);
     const all = panes();
     const tint = space ? spaceColor(t, space) + "1F" : t.selected;
+    const hidden = (c) => all.filter(p => p.tab === c.id).length - 1;
     const item = (c, i) => {
       const { name, program } = tabName(c, all);
       return h_flex().id(`tab-${c.id}`).h(30).px(13).gap(7).rounded(15).items_center().flex_none().text_size(14)
@@ -137,7 +138,13 @@ export default class Tabs extends View {
         .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
         .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(16).text_color(t.muted) : image(program.icon).size(16)))
-        .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name)))
+        .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(name)))
+        // Zoomed: one pane shown, the rest hidden behind it. Click the badge to show them all.
+        .when(c.zoomed && hidden(c) > 0, el => el.child(h_flex().id(`zoom-${c.id}`).h(18).px(6).gap(3).items_center().rounded(9).flex_none()
+          .bg(t.dim + "26").text_size(11.5).font_medium().text_color(t.muted).hover(s => s.text_color(t.foreground))
+          .on_mouse_down("left", stop)
+          .on_click((_e, cx) => { cx.stop_propagation(); const z = all.find(p => p.tab === c.id && p.zoomed); if (z) run("pane.zoom", { pane: z.pane }); })
+          .child(svg("mods/c-studio-pane/unzoom.svg").size(11)).child(`${hidden(c)}`)))
         .when(c.active, el => el.bg(tint).font_semibold())
         .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); closeTab(c.id); }).child(svg("mods/pane/close.svg").size(13))));
     };
