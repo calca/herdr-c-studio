@@ -197,7 +197,8 @@ export default class StudioDock extends View {
           .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`)))
           .child(this.iconButton(t, "dock-pin", pinned ? "◧" : "◨", () => this.setPinned(!pinned))))
       .children(all.map(row))
-      .child(div().h(1).mx(8).my(2).bg(t.border))
+      // Closed, only the icon column peeks out: keep the line under the icons.
+      .child(div().h(1).my(2).bg(t.border).when(open, (d) => d.mx(8)).when(!open, (d) => d.w(30).ml(8)))
       .child(footerButton("dock-new", "+", "New space", () => run("space.new")));
   }
 }
