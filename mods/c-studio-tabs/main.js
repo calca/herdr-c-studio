@@ -1,6 +1,6 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, layout, focused, nextCommand } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand } from "herdr";
 import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor } from "./kit.js";
 
 const WIDE_AT = 1500;
@@ -119,7 +119,11 @@ export default class Tabs extends View {
       const { name, program } = tabName(c, all);
       return h_flex().id(`tab-${c.id}`).h(30).px(13).gap(7).rounded(15).items_center().flex_none().text_size(14)
         // A rename or status dot on this or an earlier tab can push the active one out.
-        .when(i <= active, el => el.on_size_change((_size, cx) => { this.scroll.scroll_to_item(active); cx.notify(); }))
+        .on_size_change((size, cx) => {
+          this.widths[c.id] = size.width;
+          if (i <= active) this.scroll.scroll_to_item(active);
+          cx.notify();
+        })
         .relative().text_color(c.active ? t.foreground : t.muted)
         .hover(s => s.bg(t.hover))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
@@ -140,6 +144,9 @@ export default class Tabs extends View {
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;
+    const widths = this.widths ?? (this.widths = {});
+    const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 3, -3);
+    const overflow = content > (this.view ?? Infinity) + 1;
     return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
       .on_size_change((size, cx) => {
         this.autoDock(size);
@@ -149,8 +156,12 @@ export default class Tabs extends View {
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
-        .on_size_change((_size, cx) => { if (active >= 0) { this.scroll.scroll_to_item(active); cx.notify(); } })
+        .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
         .children(shown.map(item)))
+      .when(overflow, el => el.child(button("tab-more", svg("mods/workspace-chrome/chevron-down.svg").size(14), () => {
+        setShared("c-studio-palette.space", space?.id ?? null);
+        run("mod.open", { name: "c-studio-palette" });
+      })))
       .child(button("tab-new", "+", () => this.newTab()))
       .children(this.pills(t))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))

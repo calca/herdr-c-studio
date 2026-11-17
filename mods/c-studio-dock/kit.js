@@ -57,8 +57,8 @@ export function folderName(path) {
 // A plain terminal tab, in the given folder (default: the focused terminal's).
 // Space colors as Herdr's picker keeps them (shared "space.colors"): a theme
 // color name or #rrggbb per space id, new spaces getting the least used one.
-const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
-const SPACE_COLORS = ["ansi6", "ansi3", "ansi4", "ansi5", "ansi2", "ansi1"];
+export const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
+export const SPACE_COLORS = ["ansi6", "ansi3", "ansi4", "ansi5", "ansi2", "ansi1"];
 export function spaceColor(t, space) {
   if (space.name === "~") return t.dim;
   const ids = new Set(spaces().map((p) => p.id));
@@ -74,6 +74,10 @@ export function spaceColor(t, space) {
   if (changed) setShared("space.colors", kept);
   const c = kept[space.id] ?? SPACE_COLORS[0];
   return c.startsWith("#") ? c : (MARK[c] ?? t[c]);
+}
+
+export function setSpaceColor(id, key) {
+  setShared("space.colors", { ...(shared("space.colors") ?? {}), [id]: key });
 }
 
 export function newTerminal(space, folder) {

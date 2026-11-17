@@ -7,6 +7,7 @@ import { togglePanel, pinDock, tabName, openLauncher, newTerminal } from "./kit.
 const ROW_H = 44;
 const RECENT = "c-studio-palette.recent";
 const RECENT_MAX = 6;
+const SCOPE = "c-studio-palette.space";
 
 // Higher is better, 0 = no match. Whole substring beats word initials ("cc"
 // finds Claude Code), which beat letters in order ("clcd").
@@ -52,7 +53,10 @@ export default class StudioPalette extends View {
   init(_props, cx) {
     this.filter = "";
     this.at = 0;
-    this.input = InputState.new({ placeholder: "Search tabs and actions…" });
+    // Opened from the tab bar's overflow button: only that space's tabs, in order.
+    this.scope = spaces().find((w) => w.id === shared(SCOPE)) ?? null;
+    if (shared(SCOPE)) setShared(SCOPE, null);
+    this.input = InputState.new({ placeholder: this.scope ? `Tabs in ${this.scope.name}…` : "Search tabs and actions…" });
     this.input.on("change", (_e, cx) => {
       if (this.renaming) return;
       this.filter = this.input.value(); this.at = 0; cx.notify();
@@ -76,13 +80,13 @@ export default class StudioPalette extends View {
 
   items() {
     const all = panes();
-    const tabs = spaces().flatMap((w) => w.tabs.map((c) => ({ c, w, name: tabName(c, all).name })))
+    const tabs = spaces().filter((w) => !this.scope || w.id === this.scope.id).flatMap((w) => w.tabs.map((c) => ({ c, w, name: tabName(c, all).name })))
       .map(({ c, w, name }) => ({
       kind: "tab", key: `tab:${c.id}`, id: c.id, label: name, sub: w.name, status: c.status, here: w.active && c.active,
       go: () => run("tab.select", { id: c.id }),
     }));
     const rank = { blocked: 0, done: 1, working: 2 };
-    tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
+    if (!this.scope) tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
     const spaceItems = spaces().map((w) => ({
       kind: "action", key: `space:${w.id}`, label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
     }));
@@ -92,7 +96,8 @@ export default class StudioPalette extends View {
     }));
     const acts = [...spaceItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
-    const list = [...tabs, ...acts];
+    const list = this.scope ? tabs : [...tabs, ...acts];
+    if (!words.length && this.scope) return list;
     if (!words.length) {
       const recent = (shared(RECENT) ?? []).map((k) => list.find((i) => i.key === k)).filter(Boolean);
       recent.forEach((i) => { i.recent = true; });

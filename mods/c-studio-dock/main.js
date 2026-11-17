@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys } from "herdr";
-import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor } from "./kit.js";
+import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor, setSpaceColor, MARK, SPACE_COLORS } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -106,7 +106,7 @@ export default class StudioDock extends View {
               if (s.active && open && s.tabs.length > 0) return this.toggleFold(s.id);
               run("space.select", { id: s.id });
             })
-            .on_mouse_down("right", () => run("space.rename", { id: s.id }))
+            .on_mouse_down("right", (_e, cx) => { this.picking = this.picking === s.id ? null : s.id; cx.notify(); })
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
                 .when(s.active, (d) => d.bg(color + "33"))
@@ -131,6 +131,16 @@ export default class StudioDock extends View {
                 newTerminal(s.id, lead?.cwd ?? s.folder);
               }))
               .child(this.iconButton(t, `dock-close-${s.id}`, "×", () => run("space.close", { id: s.id })))))
+        .when(open && this.picking === s.id, (el) => el.child(h_flex().id(`dock-colors-${s.id}`).h(32).ml(48).gap(8).items_center()
+          .children(SPACE_COLORS.map((k) => div().id(`dock-color-${s.id}-${k}`).size(18).rounded(9).bg(MARK[k]).cursor_pointer()
+            .when(shared("space.colors")?.[s.id] === k, (d) => d.border(2).border_color(t.foreground))
+            .hover((d) => d.opacity(0.8))
+            .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); setSpaceColor(s.id, k); this.picking = null; cx.notify(); })))
+          .child(div().w(1).h(16).bg(t.border))
+          .child(div().id(`dock-rename-${s.id}`).px(6).py(2).rounded(6).text_size(12.5).text_color(t.muted).cursor_pointer()
+            .hover((d) => d.bg(t.hover).text_color(t.foreground))
+            .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.picking = null; run("space.rename", { id: s.id }); })
+            .child("Rename…"))))
         .when(open && !folded && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
           const { name, program } = tabName(c);
           const st = c.status ? (STATUS[c.status] ?? STATUS.idle) : null;

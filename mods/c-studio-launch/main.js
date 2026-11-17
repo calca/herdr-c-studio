@@ -132,8 +132,14 @@ export default class StudioLaunch extends View {
       .track_focus(this.handle)
       .on_mouse_down("left", () => this.handle.focus())
       .on_key_down((e, cx) => {
-        if (e.modifiers.control || e.modifiers.platform || e.modifiers.alt) return;
         const k = e.key;
+        // ⌥1–5: start in that recent folder.
+        if (e.modifiers.alt && !e.modifiers.control && !e.modifiers.platform && /^[1-9]$/.test(k) && recent[Number(k) - 1]) {
+          this.folder = recent[Number(k) - 1];
+          cx.stop_propagation();
+          return cx.notify();
+        }
+        if (e.modifiers.control || e.modifiers.platform || e.modifiers.alt) return;
         if (k === "escape") return this.cancel();
         if (k === "enter") return this.launch(list[this.sel]);
         if (k === "right" || k === "tab") this.sel = (this.sel + 1) % list.length;
@@ -167,12 +173,15 @@ export default class StudioLaunch extends View {
             .hover((s) => s.bg(t.hover).text_color(t.foreground))
             .tooltip(this.pretty(f))
             .on_click((_e, cx) => { this.folder = f; this.handle.focus(); cx.notify(); })
-            .child(f.split("/").pop() || f))))))
+            .child(h_flex().gap(6).items_center()
+              .child(f.split("/").pop() || f)
+              .child(div().text_size(10.5).text_color(t.dim).child(`⌥${i + 1}`))))))))
       .child(h_flex().gap(14).flex_wrap().justify_center().max_w(860).px(24)
         .children(list.map((c, i) => this.tile(t, c, i))))
       .child(h_flex().gap(14).items_center().text_size(11.5).text_color(t.dim)
         .child(h_flex().gap(5).items_center().child(key("↵")).child("open"))
         .child(h_flex().gap(5).items_center().child(key("1–9")).child("agent"))
+        .when(recent.length > 0, (el) => el.child(h_flex().gap(5).items_center().child(key(`⌥1–${recent.length}`)).child("folder")))
         .child(h_flex().gap(5).items_center().child(key("←→")).child("move"))
         .child(h_flex().gap(5).items_center().child(key("esc")).child("cancel")));
   }

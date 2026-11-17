@@ -14,6 +14,9 @@ for m in "$SRC"/mods/*/; do
   cp -R "$m". "$DEST/mods/$name/"
 done
 
+# Keep the previous keys.json next to it before merging
+[ -f "$DEST/keys.json" ] && cp "$DEST/keys.json" "$DEST/keys.json.bak-$(date +%Y%m%d%H%M%S)"
+
 # Merge the layout:c-studio key bindings without touching other entries
 python3 - "$DEST/keys.json" "$SRC/keys.c-studio.json" <<'EOF'
 import json, os, sys

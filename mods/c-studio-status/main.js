@@ -1,6 +1,6 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared } from "herdr";
+import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared, notify } from "herdr";
 import { togglePanel } from "./kit.js";
 
 const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
@@ -38,7 +38,9 @@ export default class WorkspaceStatus extends View {
         const plus = Number(/(\d+) insertion/.exec(out)?.[1] ?? 0), minus = Number(/(\d+) deletion/.exec(out)?.[1] ?? 0);
         const u = r.code === 0 ? await exec("git", [...READ, "ls-files", "--others", "--exclude-standard"], opts) : null;
         const fresh = u?.code === 0 ? u.stdout.split("\n").filter(Boolean).length : 0;
-        const next = plus || minus || fresh ? { plus, minus, fresh } : null;
+        const ab = r.code === 0 ? await exec("git", [...READ, "rev-list", "--left-right", "--count", "@{u}...HEAD"], opts) : null;
+        const [behind, ahead] = ab?.code === 0 ? ab.stdout.trim().split(/\s+/).map(Number) : [0, 0];
+        const next = plus || minus || fresh || ahead || behind ? { plus, minus, fresh, ahead, behind } : null;
         if (JSON.stringify(next) !== JSON.stringify(this.diff)) { this.diff = next; c.notify(); }
       } catch {}
       // Even after a failure, so a slow repo is retried by the timer, not on every render.
@@ -66,6 +68,23 @@ export default class WorkspaceStatus extends View {
     const a = list[(at + 1) % list.length];
     run("tab.select", { id: a.tab });
     run("pane.focus", { pane: a.pane });
+  }
+
+  // Behind: fast-forward pull; otherwise push. The result comes back as a toast.
+  sync(cx) {
+    const at = this.where(), d = this.diff;
+    if (!at.cwd || !d || this.syncing) return;
+    const pull = d.behind > 0;
+    this.syncing = true;
+    cx.notify();
+    cx.spawn(async (c) => {
+      const r = await exec("git", pull ? ["pull", "--ff-only"] : ["push"], { cwd: at.cwd, on: at.on, timeout: 60000 });
+      const out = (r.stderr || r.stdout || "").trim().split("\n").pop();
+      notify({ title: r.code === 0 ? (pull ? "Pulled" : "Pushed") : (pull ? "Pull failed" : "Push failed"), body: out, level: r.code === 0 ? "success" : "error" });
+      this.syncing = false;
+      this.at = null;
+      c.notify();
+    });
   }
 
   copyBranch(branch, cx) {
@@ -103,11 +122,16 @@ export default class WorkspaceStatus extends View {
       .child(div().px(8).child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer")))
       .when(Boolean(space?.branch), el => el.child(click(div(), "status-branch", (cx) => this.copyBranch(space.branch, cx))
         .flex().items_center().child(label("branch", this.copied ? "Copied" : space.branch))))
-      .when(Boolean(this.diff), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => togglePanel("changes"))
+      .when(Boolean(this.diff && (this.diff.plus || this.diff.minus || this.diff.fresh)), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => togglePanel("changes"))
         .when(this.diff.plus > 0 || this.diff.minus > 0, (d) => d
           .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
           .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`)))
         .when(this.diff.fresh > 0, (d) => d.child(div().text_color(t.dim).child(`${this.diff.fresh} new`)))))
+      .when(Boolean(this.diff?.ahead || this.diff?.behind), el => el.child(click(h_flex().gap(5).items_center(), "status-sync", (cx) => this.sync(cx))
+        .tooltip(this.diff.behind > 0 ? "Pull (fast-forward)" : "Push")
+        .when(this.syncing, (d) => d.child(svg("mods/workspace-chrome/spinner.svg").size(12).spin(900)))
+        .when(this.diff.ahead > 0, (d) => d.child(div().child(`↑${this.diff.ahead}`)))
+        .when(this.diff.behind > 0, (d) => d.child(div().child(`↓${this.diff.behind}`)))))
       .child(div().flex_1())
       .when(working > 0, el => el.child(pill("status-working", t.working, `${working} working`, (a) => a.status === "working")))
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))

@@ -5,14 +5,14 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 ## Contents
 
 - `layouts/c-studio.json` – the layout
-- `mods/c-studio-dock` – floating spaces dock with all tabs (peek on hover, pin with ⌘B; auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs; spaces in their colors, program icons, drag to reorder tabs, × on hover)
-- `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill, status dot first
+- `mods/c-studio-dock` – floating spaces dock with all tabs (peek on hover, pin with ⌘B; auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs; spaces in their colors (right-click a space to pick one or rename it), program icons, drag to reorder tabs, × on hover)
+- `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill in the space color, status dot first; a ⌄ button lists the space's tabs when they don't fit
 - `mods/c-studio-pane` – terminal pane header: repo-relative folder and git branch
-- `mods/c-studio-status` – status bar; click working / needs you / idle to cycle agents, click the branch to copy it
+- `mods/c-studio-status` – status bar; click working / needs you / idle to cycle agents, click the branch to copy it; ↑ahead ↓behind pushes or fast-forward pulls
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, ⌘R renames and ⌘⌫ closes the selected tab
 - Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
-- `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder, or a new worktree
-- `mods/c-studio-toast` – notifications in the palette style
+- `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
+- `mods/c-studio-toast` – notifications in the palette style, with a Go button when they lead somewhere
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color; `themes/macos-{dark,light}.json` – cool alternative
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
 

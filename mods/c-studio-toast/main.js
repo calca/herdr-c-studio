@@ -64,6 +64,8 @@ export default class StudioToast extends View {
               .on_click((_e, cx) => { cx.stop_propagation(); cx.write_to_clipboard(command); this.copied = true; cx.notify(); })
               .child(this.copied ? "Copied" : "Copy")))),
       )
+      .when(Boolean(p.action?.name) && !login, (el) => el.child(div().flex_none().px(10).h(26).flex().items_center().rounded(13)
+        .bg(t.accent).text_size(12.5).font_semibold().text_color(t.accent_foreground).child("Go")))
       .when(this.count > 1, (el) => el.child(div().flex_none().px(7).h(20).flex().items_center().rounded(10)
         .bg(t.raised).text_size(11.5).font_semibold().text_color(t.muted).child(`×${this.count}`)));
   }
