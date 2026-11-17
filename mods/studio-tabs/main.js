@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, layout, focused, nextCommand } from "herdr";
-import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal } from "./kit.js";
+import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -114,6 +114,7 @@ export default class Tabs extends View {
     const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const all = panes();
+    const tint = space ? spaceColor(t, space) + "1F" : t.selected;
     const item = (c, i) => {
       const { name, program } = tabName(c, all);
       return h_flex().id(`tab-${c.id}`).h(30).px(13).gap(7).rounded(15).items_center().flex_none().text_size(14)
@@ -132,7 +133,7 @@ export default class Tabs extends View {
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
         .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(16).text_color(t.muted) : image(program.icon).size(16)))
         .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name)))
-        .when(c.active, el => el.bg(t.selected).font_semibold())
+        .when(c.active, el => el.bg(tint).font_semibold())
         .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(13))));
     };
     const w = window();
