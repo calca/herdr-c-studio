@@ -82,6 +82,24 @@ export function setSpaceColor(id, key) {
 
 export function newTerminal(space, folder) {
   run("tab.new", { space: space ?? undefined, folder: folder ?? undefined });
+  dropPlaceholders(space);
+}
+
+// "New tab" launchers left only to keep a space open (see keepSpace) go once
+// the space has a real tab again.
+export async function dropPlaceholders(spaceId) {
+  const id = spaceId ?? spaces().find((s) => s.active)?.id;
+  const holder = (c, all) => { const mine = all.filter((p) => p.tab === c.id); return mine.length > 0 && mine.every((p) => p.mod === "c-studio-launch"); };
+  for (let i = 0; i < 20; i++) {
+    const space = spaces().find((s) => s.id === id);
+    if (!space) return;
+    const all = panes();
+    const held = space.tabs.filter((c) => holder(c, all));
+    if (!held.length) return;
+    // Only once a real tab is there, or the space would close with its last one.
+    if (held.length < space.tabs.length) { for (const c of held) run("tab.close", { id: c.id, confirmed: true }); return; }
+    await pause();
+  }
 }
 
 export function openLauncher(space, folder) {
@@ -93,10 +111,20 @@ export function busyPanes(id, all = panes()) {
   return all.filter((p) => p.tab === id && p.terminal && p.program && !p.program.shell);
 }
 
+// Herdr closes a space when its last tab goes. Before that tab leaves (closed,
+// parked or moved), leave a "New tab" launcher behind so the space stays; a
+// space is closed only with its own ×. The launcher tab itself can still go.
+export function keepSpace(tabId) {
+  const space = spaces().find((s) => s.tabs.some((c) => c.id === tabId));
+  if (!space || space.tabs.length > 1) return;
+  if (!panes().some((p) => p.tab === tabId && p.terminal)) return;
+  run("tab.new", { space: space.id, name: "New tab", mod: "c-studio-launch", props: { space: space.id, folder: space.folder ?? undefined }, focus: false });
+}
+
 // A plain shell closes at once; a running program or agent asks: park (keeps running) or close.
 export function closeTab(id) {
   if (!id) return;
-  if (!busyPanes(id).length) return run("tab.close", { id });
+  if (!busyPanes(id).length) { keepSpace(id); return run("tab.close", { id }); }
   openOverlay({ mod: "c-studio-close", kind: "dialog", width: 440, height: 210, props: { tab: id } });
 }
 
@@ -114,6 +142,7 @@ export async function moveTab(tabId, spaceId) {
   if (!tab || !to || from.id === to.id || (from.machine ?? null) !== (to.machine ?? null)) return false;
   const terms = panes().filter((p) => p.tab === tabId && p.terminal).map((p) => p.terminal);
   if (!terms.length) return false;
+  keepSpace(tabId);
   const fresh = "tb" + Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
   for (const t of terms) run("terminal.park", { terminal: t });
   for (const t of terms) {

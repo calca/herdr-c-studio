@@ -12,6 +12,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, ⌘R renames and ⌘⌫ closes the selected tab, "Move tab to …" moves the focused tab to another space (processes keep running); parked terminals are listed too (↵ resumes one as a tab, ⌘⌫ ends it)
 - Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
 - `mods/c-studio-close` – × / ⌘W on a tab running more than a shell asks: Park (keep it running in the background), Close, or Cancel
+- Spaces stay open: when a space's last tab is closed, parked or moved, a "New tab" launcher takes its place (it goes once a real tab opens); a space closes only with its own ×
 - `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
 - `mods/c-studio-toast` – quiet notifications: only errors and warnings show (agent status lives in the dots), in the palette style, with a Go button when they lead somewhere
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color; `themes/macos-{dark,light}.json` – cool alternative

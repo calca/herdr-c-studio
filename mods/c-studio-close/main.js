@@ -4,7 +4,7 @@
 import { View, div } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { props, closeOverlay, run, theme, spaces, panes } from "herdr";
-import { tabName, busyPanes } from "./kit.js";
+import { tabName, busyPanes, keepSpace } from "./kit.js";
 
 export default class CloseTab extends View {
   init(_props, cx) {
@@ -24,6 +24,7 @@ export default class CloseTab extends View {
 
   park(tab) {
     const mine = panes().filter((p) => p.tab === tab.id);
+    keepSpace(tab.id);
     for (const p of mine.filter((p) => p.terminal)) run("terminal.park", { terminal: p.terminal });
     // Mod panes have nothing to keep running; the tab goes with them.
     if (mine.some((p) => !p.terminal)) run("tab.close", { id: tab.id, confirmed: true });
@@ -31,6 +32,7 @@ export default class CloseTab extends View {
   }
 
   close(tab) {
+    keepSpace(tab.id);
     run("tab.close", { id: tab.id });
     this.done();
   }

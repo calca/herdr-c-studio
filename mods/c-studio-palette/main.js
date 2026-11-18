@@ -2,7 +2,7 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused, terminals } from "herdr";
-import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab } from "./kit.js";
+import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab, dropPlaceholders } from "./kit.js";
 
 const ROW_H = 44;
 const RECENT = "c-studio-palette.recent";
@@ -106,7 +106,7 @@ export default class StudioPalette extends View {
     }));
     const known = (shared("new-menu.agents") ?? {})[""] ?? [];
     const agentItems = known.filter((a) => a.installed).map((a) => ({
-      kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
+      kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => { run("tab.new", { name: a.name, argv: a.run }); dropPlaceholders(f?.space); },
     }));
     const acts = [...spaceItems, ...moveItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
