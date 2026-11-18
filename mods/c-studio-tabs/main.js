@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand } from "herdr";
-import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab } from "./kit.js";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand, agents } from "herdr";
+import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -18,11 +18,21 @@ export default class Tabs extends View {
         if (cmd === "new") this.newTab();
         else if (cmd === "close") closeTab(focused()?.tab);
         else if (cmd === "files" || cmd === "changes") togglePanel(cmd);
+        else if (cmd === "waiting") this.nextWaiting();
         c.notify();
       }
     });
     this.scroll = ScrollHandle.new();
     this.panels = JSON.parse(localStorage.getItem("panels") ?? "{}");
+  }
+
+  // The next agent that needs you, in any space; from the focused one onwards.
+  nextWaiting() {
+    const list = agents().filter((a) => a.status === "blocked");
+    if (!list.length) return;
+    const a = list[(list.findIndex((a) => a.focused) + 1) % list.length];
+    run("tab.select", { id: a.tab });
+    run("pane.focus", { pane: a.pane });
   }
 
   newTab() {
@@ -137,7 +147,7 @@ export default class Tabs extends View {
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
         .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
-        .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(16).text_color(t.muted) : image(program.icon).size(16)))
+        .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, t.muted)))
         .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(name)))
         // Zoomed: one pane shown, the rest hidden behind it. Click the badge to show them all.
         .when(c.zoomed && hidden(c) > 0, el => el.child(h_flex().id(`zoom-${c.id}`).h(18).px(6).gap(3).items_center().rounded(9).flex_none()

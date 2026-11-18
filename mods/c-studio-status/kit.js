@@ -2,6 +2,7 @@
 // folder, so every mod keeps an identical copy: edit one, then run the repo's
 // sync.sh, which refuses to continue while the copies differ.
 
+import { svg, image } from "gpui-kit";
 import { run, panes, layout, shared, setShared, home, spaces, openOverlay, hc, exec } from "herdr";
 
 export const SIDEBAR = { open: 296, peek: 56 };
@@ -46,6 +47,15 @@ export function tabName(tab, all = panes()) {
   if (program?.agent) return { name: lead.title && lead.title !== program.name ? lead.title : program.name, program };
   if (program && !program.shell) return { name: program.name, program };
   return { name: folderName(lead?.cwd) ?? program?.name ?? "Terminal", program };
+}
+
+// A program's icon in one color (no brand reds): SVGs are drawn as a glyph in
+// the text color; only pictures (PNG) keep their own colors.
+export function programIcon(program, size, color) {
+  if (!program?.icon) return null;
+  return program.tint || /\.svg$/i.test(program.icon)
+    ? svg(program.icon).size(size).flex_none().text_color(color)
+    : image(program.icon).size(size).flex_none();
 }
 
 export function folderName(path) {

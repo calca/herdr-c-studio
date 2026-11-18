@@ -26,7 +26,7 @@ function paneFrame(node) {
 
 function icon(p, size, color) {
   if (!p?.icon) return null;
-  return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
+  return p.tint || /\.svg$/i.test(p.icon) ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
 const MOD_TITLES = { "c-studio-launch": "New tab" };
