@@ -31,7 +31,8 @@ export default class CloseTab extends View {
     this.done();
   }
 
-  close(tab) {
+  // Not "close": Herdr calls a view's close() when its overlay goes.
+  stop(tab) {
     keepSpace(tab.id);
     run("tab.close", { id: tab.id });
     this.done();
@@ -53,7 +54,7 @@ export default class CloseTab extends View {
       .on_key_down((e, cx) => {
         if (e.key === "escape") this.done();
         else if (e.key === "enter") this.park(tab);
-        else if (e.key === "backspace" && e.modifiers.platform) this.close(tab);
+        else if (e.key === "backspace" && e.modifiers.platform) this.stop(tab);
         else return;
         cx.stop_propagation();
       })
@@ -62,7 +63,7 @@ export default class CloseTab extends View {
       .child(div().flex_1())
       .child(h_flex().gap(8).justify_end()
         .child(button("close-cancel", "Cancel", false, () => this.done()))
-        .child(button("close-close", "Close  ⌘⌫", false, () => this.close(tab)))
+        .child(button("close-close", "Close  ⌘⌫", false, () => this.stop(tab)))
         .child(button("close-park", "Park  ↵", true, () => this.park(tab))));
   }
 }
