@@ -5,7 +5,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 ## Contents
 
 - `layouts/c-studio.json` – the layout
-- `mods/c-studio-dock` – floating spaces dock with all tabs, same look pinned or floating (peek on hover, pin with ⌘B; auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs; spaces in their colors (right-click a space to pick one or rename it), program icons in one color, drag to reorder tabs or drop one on another space to move it, × on hover)
+- `mods/c-studio-dock` – floating spaces dock with all tabs, same look pinned or floating (peek on hover, pin with ⌘B; auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs; spaces in their colors (right-click a space to pick one or rename it), program icons in one color (the "needs you" color when an agent waits), drag to reorder tabs or drop one on another space to move it, × on hover)
 - `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill in the space color, status dot first; a ⌄ button lists the space's tabs when they don't fit; ⌘J jumps to the next agent that needs you, in any space
 - `mods/c-studio-pane` – terminal pane header: repo-relative folder and git branch; buttons fade in on hover; a maximized pane shows "+N hidden" (click to restore), and its tab gets a badge
 - `mods/c-studio-status` – status bar; click working / needs you / idle to cycle agents, click the branch to copy it; ↑ahead ↓behind pushes or fast-forward pulls

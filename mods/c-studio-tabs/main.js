@@ -147,7 +147,7 @@ export default class Tabs extends View {
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
         .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
-        .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, t.muted)))
+        .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, c.status === "blocked" ? t.blocked : t.muted)))
         .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(name)))
         // Zoomed: one pane shown, the rest hidden behind it. Click the badge to show them all.
         .when(c.zoomed && hidden(c) > 0, el => el.child(h_flex().id(`zoom-${c.id}`).h(18).px(6).gap(3).items_center().rounded(9).flex_none()

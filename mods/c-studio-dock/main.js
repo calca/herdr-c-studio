@@ -172,7 +172,7 @@ export default class StudioDock extends View {
               if (d && d.space === s.id && d.tab !== c.id) run("tab.move", { id: d.tab, index: s.tabs.findIndex((x) => x.id === c.id) + 1 });
             })
             .child(this.dot(t, c.status, 6))
-            .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, focused ? t.foreground : t.muted)))
+            .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, c.status === "blocked" ? t.blocked : focused ? t.foreground : t.muted)))
             .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
             .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => closeTab(c.id))))
             .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
