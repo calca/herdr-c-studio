@@ -20,7 +20,7 @@ export default class StudioToast extends View {
     const p = props() ?? {};
     // Quiet by default: agent and info notices go away at once (the dots on tabs,
     // dock and status bar already say it); only problems are shown.
-    if (!QUIET_KEEP.has(p.level)) { this.silent = true; if (p.overlay) closeOverlay(p.overlay); return; }
+    if (!QUIET_KEEP.has(p.level) || String(p.action?.name ?? "").startsWith("agent.") || /needs you|finished/i.test(`${p.title} ${p.body}`)) { this.silent = true; if (p.overlay) closeOverlay(p.overlay); return; }
     this.key = [p.title, p.body, p.level].join("\u0000");
     this.overlay = p.overlay;
     const before = LIVE.get(this.key);
