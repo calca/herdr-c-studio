@@ -7,7 +7,15 @@ const WIDE_AT = 1500;
 const NARROW_AT = 1400;
 const PANEL_MIN = 1100;
 const SWIPE = 80;
+const MAX_TABS = 4;
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
+
+// A round button in the tray's style: same height, border and fill.
+function round(t, id) {
+  return div().id(id).size(38).flex().flex_none().items_center().justify_center().rounded(19)
+    .bg(t.background).border(1).border_color(t.border).text_color(t.muted).cursor_pointer()
+    .hover(s => s.bg(t.hover).text_color(t.foreground));
+}
 
 export default class Tabs extends View {
   init(_props, cx) {
@@ -79,9 +87,8 @@ export default class Tabs extends View {
     const shownPanel = panelShown();
     return PANELS.map(([id, label, tip]) => {
       const on = shownPanel === id;
-      return div().id(`panel-${id}`).size(26).flex().flex_none().items_center().justify_center().rounded(13)
-        .tooltip(tip).text_size(12.5).font_medium().bg(on ? t.selected : t.canvas).text_color(on ? t.foreground : t.muted)
-        .cursor_pointer().hover(s => s.bg(t.hover))
+      return round(t, `panel-${id}`).tooltip(tip).text_size(12.5).font_medium()
+        .bg(on ? t.selected : t.background).text_color(on ? t.foreground : t.muted)
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
         .on_click(() => togglePanel(id)).child(label);
     });
@@ -113,7 +120,12 @@ export default class Tabs extends View {
     if (shared("dock.pinned") === true) return h_flex().id("c-studio-tabs-pinned").size_full().pt(10).pr(16).gap(4).items_center().justify_end()
       .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
       .children(this.pills(t));
-    const shown = space?.tabs ?? [];
+    // At most MAX_TABS in the tray, the active one always among them; the rest are in ⌄.
+    const tabs = space?.tabs ?? [];
+    const at = tabs.findIndex(tab => tab.active);
+    const shown = tabs.length <= MAX_TABS ? tabs
+      : at < MAX_TABS ? tabs.slice(0, MAX_TABS) : [...tabs.slice(0, MAX_TABS - 1), tabs[at]];
+    const more = tabs.length - shown.length;
     const active = shown.findIndex(tab => tab.active);
     const selected = shown[active]?.id;
     if (selected !== this.selected || active !== this.selectedIndex) {
@@ -167,7 +179,8 @@ export default class Tabs extends View {
     const compact = (this.size?.width ?? 1200) < 900;
     const widths = this.widths ?? (this.widths = {});
     const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 3, -3);
-    const overflow = content > (this.view ?? Infinity) + 1;
+    const overflow = more > 0 || content > (this.view ?? Infinity) + 1;
+    // Tabs sit centered in one rounded tray; the panel toggles keep to the right.
     return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
       .on_size_change((size, cx) => {
         this.autoDock(size);
@@ -176,15 +189,19 @@ export default class Tabs extends View {
       })
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
-      .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
-        .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
-        .children(shown.map(item)))
-      .when(overflow, el => el.child(button("tab-more", svg("mods/workspace-chrome/chevron-down.svg").size(14), () => {
-        setShared("c-studio-palette.space", space?.id ?? null);
-        run("mod.open", { name: "c-studio-palette" });
-      })))
-      .child(button("tab-new", "+", () => this.newTab()))
-      .children(this.pills(t))
+      .child(div().flex_1().min_w(0))
+      .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).p(3).gap(3).items_center().rounded(19)
+        .bg(t.background).border(1).border_color(t.border)
+        .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
+          .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
+          .children(shown.map(item))))
+      .when(overflow, el => el.child(round(t, "tab-more").relative().on_mouse_down("left", stop)
+        .on_click(() => { setShared("c-studio-palette.space", space?.id ?? null); run("mod.open", { name: "c-studio-palette" }); })
+        .child(svg("mods/workspace-chrome/chevron-down.svg").size(14))
+        .when(more > 0, b => b.child(div().absolute().top(-3).right(-3).min_w(16).h(16).px(4).flex().items_center().justify_center()
+          .rounded(8).bg(t.raised).border(1).border_color(t.border).text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
+      .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
+      .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/c-studio-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/c-studio-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

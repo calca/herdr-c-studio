@@ -1,12 +1,12 @@
 {
   "layout:c-studio": {
     "cmd-b": "c-studio-dock.toggle",
+    "cmd-j": "c-studio-tabs.waiting",
     "cmd-k": "mod.open:c-studio-palette",
-    "cmd-t": "c-studio-tabs.new",
+    "cmd-p": "mod.open:c-studio-palette",
     "cmd-shift-e": "c-studio-tabs.files",
     "cmd-shift-g": "c-studio-tabs.changes",
-    "cmd-p": "mod.open:c-studio-palette",
-    "cmd-w": "c-studio-tabs.close",
-    "cmd-j": "c-studio-tabs.waiting"
+    "cmd-t": "c-studio-tabs.new",
+    "cmd-w": "c-studio-tabs.close"
   }
 }
