@@ -35,7 +35,7 @@
     {
       "id": "work-body",
       "type": "row",
-      "resizable": false,
+      "resizable": true,
       "padding": [
         10,
         10
@@ -71,7 +71,9 @@
                 }
               }
             }
-          ]
+          ],
+          "min": 56,
+          "max": 520
         },
         {
           "id": "main",

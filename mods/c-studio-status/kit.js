@@ -5,7 +5,12 @@
 import { svg, image } from "gpui-kit";
 import { run, panes, layout, shared, setShared, home, spaces, openOverlay, hc, exec } from "herdr";
 
-export const SIDEBAR = { open: 296, peek: 56 };
+export const SIDEBAR = { open: 296, peek: 56, min: 220, max: 520 };
+
+// The dock's width when open: dragged by its edge, remembered across restarts.
+export function dockWidth() {
+  return Math.min(SIDEBAR.max, Math.max(SIDEBAR.min, shared("dock.width") ?? SIDEBAR.open));
+}
 
 export function find(node, id) {
   if (node?.id === id) return node;
@@ -35,7 +40,7 @@ export function togglePanel(id) {
 
 export function pinDock(pinned) {
   setShared("dock.pinned", pinned);
-  run("layout.resize", { id: "sidebar", px: pinned ? SIDEBAR.open : SIDEBAR.peek });
+  run("layout.resize", { id: "sidebar", px: pinned ? dockWidth() : SIDEBAR.peek });
 }
 
 // A tab's label: its given name, else the agent session's title, else the

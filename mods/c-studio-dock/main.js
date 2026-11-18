@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys } from "herdr";
-import { SIDEBAR, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon } from "./kit.js";
+import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys, layout } from "herdr";
+import { SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -41,7 +41,27 @@ export default class StudioDock extends View {
   }
 
   apply(pinned) {
-    run("layout.resize", { id: "sidebar", px: pinned ? SIDEBAR.open : SIDEBAR.peek });
+    run("layout.resize", { id: "sidebar", px: pinned ? dockWidth() : SIDEBAR.peek });
+  }
+
+  // The edge between dock and terminals is draggable (Herdr's own resize):
+  // pinned, the new width is kept; dragged narrow it folds; dragged open from
+  // the folded strip it pins at that width.
+  followEdge(pinned, cx) {
+    const px = find(layout(), "sidebar")?.size?.px;
+    if (!px || px === this.edge) return;
+    this.edge = px;
+    // Settle once the drag stops: writing shared state every frame makes it stutter.
+    const tok = this.edgeTok = (this.edgeTok ?? 0) + 1;
+    cx.timer.after(250, () => {
+      if (tok !== this.edgeTok) return;
+      const want = pinned ? dockWidth() : SIDEBAR.peek;
+      if (px === want) return;
+      if (pinned && px < SIDEBAR.min - 40) return pinDock(false);
+      if (!pinned && px > SIDEBAR.peek + 60) { setShared("dock.width", px); return pinDock(true); }
+      if (pinned) setShared("dock.width", Math.min(SIDEBAR.max, Math.max(SIDEBAR.min, px)));
+      if (px < SIDEBAR.min || px > SIDEBAR.max || !pinned) run("layout.resize", { id: "sidebar", px: pinned ? dockWidth() : SIDEBAR.peek });
+    });
   }
 
   // Folded spaces hide their tab rows; remembered across copies and restarts.
@@ -60,11 +80,13 @@ export default class StudioDock extends View {
     return k.keys.split("-").map((p) => ({ ctrl: "⌃", cmd: "⌘", shift: "⇧", alt: "⌥" }[p] ?? p.toUpperCase())).join("");
   }
 
+  // Same box for spinner and dot, so a tab starting to work doesn't shift its row.
   dot(t, status, size = 8) {
-    if (status === "working") return svg("mods/workspace-chrome/spinner.svg").size(size + 4).flex_none().text_color(t.working).spin(900);
-    if (status === "blocked") return div().size(size).flex_none().rounded(size / 2).bg(t.blocked).loop("opacity", { from: 0.35, to: 1, period: 1400 });
-    if (status === "done") return div().size(size).flex_none().rounded(size / 2).bg(t.done);
-    return div().size(size).flex_none();
+    const box = div().size(size + 4).flex_none().flex().items_center().justify_center();
+    if (status === "working") return box.child(svg("mods/workspace-chrome/spinner.svg").size(size + 4).text_color(t.working).spin(900));
+    if (status === "blocked") return box.child(div().size(size).rounded(size / 2).bg(t.blocked).loop("opacity", { from: 0.35, to: 1, period: 1400 }));
+    if (status === "done") return box.child(div().size(size).rounded(size / 2).bg(t.done));
+    return box;
   }
 
   iconButton(t, id, glyph, action) {
@@ -78,6 +100,7 @@ export default class StudioDock extends View {
   render(cx) {
     const t = theme();
     const pinned = shared("dock.pinned") === true;
+    if (!this.docked) this.followEdge(pinned, cx);
     if (this.docked !== pinned) { this.wasShown = false; return div(); }
     if (this.docked && !this.wasShown) {
       this.wasShown = true;
@@ -185,7 +208,7 @@ export default class StudioDock extends View {
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
-    return v_flex().id("dock-root").w(SIDEBAR.open).py(10)
+    return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
       .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.popover).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
       .child(
