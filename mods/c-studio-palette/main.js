@@ -1,7 +1,7 @@
 // Spotlight-style palette: one input, one flat list of tabs and quick actions.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused } from "herdr";
+import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused, terminals } from "herdr";
 import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab } from "./kit.js";
 
 const ROW_H = 44;
@@ -95,13 +95,22 @@ export default class StudioPalette extends View {
     const moveItems = f?.tab ? spaces().filter((w) => w.id !== here?.id && (w.machine ?? null) === (here?.machine ?? null)).map((w) => ({
       kind: "action", key: `move:${w.id}`, label: `Move tab to ${w.name}`, sub: "Space", icon: "→", go: () => setShared("c-studio.move", { tab: f.tab, space: w.id }),
     })) : [];
+    // Parked: still running, but Herdr took its pane and its space/tab labels away.
+    const shown = new Set(all.map((p) => p.terminal));
+    const parked = terminals().filter((x) => x.state === "live" && !x.parent && x.labels && "herdr.seen" in x.labels
+      && !x.labels["herdr.space"] && !shown.has(x.address)).map((x) => ({
+      kind: "parked", key: `parked:${x.address}`, id: x.address, status: x.status,
+      label: x.name || x.program?.name || x.foreground?.name || x.address,
+      sub: `Parked · ${(x.cwd ?? "").split("/").pop() || "~"}`,
+      go: () => run("terminal.keep", { terminal: x.address }),
+    }));
     const known = (shared("new-menu.agents") ?? {})[""] ?? [];
     const agentItems = known.filter((a) => a.installed).map((a) => ({
       kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => run("tab.new", { name: a.name, argv: a.run }),
     }));
     const acts = [...spaceItems, ...moveItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
-    const list = this.scope ? tabs : [...tabs, ...acts];
+    const list = this.scope ? tabs : [...tabs, ...parked, ...acts];
     if (!words.length && this.scope) return list;
     if (!words.length) {
       const recent = (shared(RECENT) ?? []).map((k) => list.find((i) => i.key === k)).filter(Boolean);
@@ -124,14 +133,14 @@ export default class StudioPalette extends View {
   }
 
   remember(item) {
-    const keep = (shared(RECENT) ?? []).filter((k) => k !== item.key && !k.startsWith("tab:") && !k.startsWith("move:"));
+    const keep = (shared(RECENT) ?? []).filter((k) => k !== item.key && !k.startsWith("tab:") && !k.startsWith("move:") && !k.startsWith("parked:"));
     setShared(RECENT, [item.key, ...keep].slice(0, RECENT_MAX));
   }
 
   go(item) {
     if (!item) return;
     this.close();
-    if (item.kind !== "tab") this.remember(item);
+    if (item.kind === "action") this.remember(item);
     item.go();
   }
 
@@ -150,10 +159,11 @@ export default class StudioPalette extends View {
         .when(on, (el) => el.bg(t.selected))
         .hover((s) => s.bg(t.hover))
         .on_click(() => this.go(item))
-        .child(item.kind === "tab" ? dot(item.status) : div().w(14).flex_none().text_color(t.muted).child(item.icon))
+        .child(item.kind !== "action" ? dot(item.status) : div().w(14).flex_none().text_color(t.muted).child(item.icon))
         .child(div().flex_1().truncate().text_size(14.5).text_color(t.foreground).when(item.here, (d) => d.font_semibold()).child(item.label))
         .when(on && item.kind === "tab", (el) => el.child(div().text_size(11.5).text_color(t.dim).child("⌘R rename · ⌘⌫ close")))
-        .when(item.sub && !(on && item.kind === "tab"), (el) => el.child(div().text_size(12).text_color(t.dim).child(item.sub)))
+        .when(on && item.kind === "parked", (el) => el.child(div().text_size(11.5).text_color(t.dim).child("↵ resume as tab · ⌘⌫ end")))
+        .when(item.sub && !(on && item.kind !== "action"), (el) => el.child(div().text_size(12).text_color(t.dim).child(item.sub)))
         .when(item.hint, (el) => el.child(div().text_size(12).text_color(t.dim).child(item.hint)));
     };
 
@@ -174,6 +184,11 @@ export default class StudioPalette extends View {
           cx.stop_propagation();
           this.close();
           return closeTab(sel.id);
+        }
+        if (e.modifiers.platform && sel?.kind === "parked" && k === "backspace") {
+          cx.stop_propagation();
+          run("terminal.kill", { terminal: sel.id });
+          return cx.notify();
         }
         if (e.modifiers.platform && sel?.kind === "tab" && k === "r") {
           cx.stop_propagation();

@@ -9,6 +9,8 @@ import { props, closeOverlay, run, theme } from "herdr";
 // Shared by every toast copy (module scope): which overlay shows each notice now.
 const LIVE = new Map();
 
+const QUIET_KEEP = new Set(["error", "warning"]);
+
 const DOT = { error: "blocked", warning: "working", success: "done", info: "accent" };
 
 export default class StudioToast extends View {
@@ -16,6 +18,9 @@ export default class StudioToast extends View {
   // closes the one before it and counts how many it stands for.
   init(_props, cx) {
     const p = props() ?? {};
+    // Quiet by default: agent and info notices go away at once (the dots on tabs,
+    // dock and status bar already say it); only problems are shown.
+    if (!QUIET_KEEP.has(p.level)) { this.silent = true; if (p.overlay) closeOverlay(p.overlay); return; }
     this.key = [p.title, p.body, p.level].join("\u0000");
     this.overlay = p.overlay;
     const before = LIVE.get(this.key);
@@ -27,10 +32,12 @@ export default class StudioToast extends View {
   }
 
   async close() {
+    if (this.silent) return;
     if (LIVE.get(this.key)?.overlay === this.overlay) LIVE.delete(this.key);
   }
 
   render(cx) {
+    if (this.silent) return div();
     const t = theme();
     const p = props() ?? {};
     const login = /^([a-z0-9][a-z0-9_.-]{0,31}) needs login; run hc machine login \1$/.exec(p.body ?? "");
