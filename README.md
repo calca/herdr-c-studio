@@ -2,6 +2,12 @@
 
 Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-peek spaces dock, Claude-inspired warm themes.
 
+![C-Studio with the spaces dock pinned, dark theme](docs/dock-dark.png)
+
+| Tab tray, dark | Dock pinned, light | Tab tray, light |
+|---|---|---|
+| ![Tab tray, dark](docs/tabs-dark.png) | ![Dock pinned, light](docs/dock-light.png) | ![Tab tray, light](docs/tabs-light.png) |
+
 ## Contents
 
 - `layouts/c-studio.json` – the layout
