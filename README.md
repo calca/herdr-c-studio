@@ -33,6 +33,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color
 - `hooks/copilot/herdr-status.{sh,json}` – Copilot CLI hooks that report the agent status to Herdr (OSC 7501): working, done, and needs you only for a real permission prompt or a question to you (not `permissionRequest`, which fires for every tool); installed in `~/.copilot/hooks`, new Copilot sessions pick them up
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
+- `RECIPE.md` – the brief another agent can rebuild C-Studio from (herdr.dev gallery format)
 
 ## Requirements
 

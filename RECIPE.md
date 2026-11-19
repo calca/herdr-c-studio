@@ -1,0 +1,130 @@
+# C-Studio
+
+A calm, focused studio for Herdr.app: a macOS-style window for coding agents. A single rounded tab tray runs along the top. A spaces dock sits on the left: pinned on a big monitor, folded into an icon strip on a laptop. The terminal panes have soft edges, and a quiet status bar runs along the bottom. Warm light and dark themes follow the system. Agent status (working, needs you, done) shows as dots and spinners everywhere, and ⌘J jumps to the next agent waiting on you.
+
+![C-Studio](preview.png)
+
+## What you see
+
+Top to bottom:
+
+- **Tab bar (48 px, window drag area).**
+  - No title bar; the traffic lights sit at (18, 22).
+  - Tabs are centered in one rounded tray, with at most 4 visible; the active tab is always shown.
+  - The active tab is a soft pill tinted with its space's color. Each tab shows its status dot first, then the agent session title or the program name.
+  - Round buttons on the left of the tray:
+    - ⌄ has a badge with the number of hidden tabs and lists them.
+    - \+ opens a new terminal.
+  - Round **F** / **C** buttons on the right toggle the Files / Changes panel.
+- **Body row** (10 px padding, 10 px gap):
+  - **Sidebar (56–520 px).**
+    - The spaces dock, one row per space: a color square with the initial, the name, and the space's tabs beneath it. Each tab row has a monochrome program icon, a name, a status dot or spinner, and an "ago" time.
+    - When the dock is not pinned, a 56 px icon strip peeks out. Hovering it slides the same dock in as a floating overlay on the left edge.
+  - **Main.** The active tab's panes:
+    - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome.
+    - Each pane has a 36 px header (`c-studio-pane`) showing:
+      - the repo-relative folder and git branch;
+      - a spinner while working;
+      - split-right, split-down, zoom and close buttons that fade in on hover.
+  - **Side panel (hidden by default, 280–700 px, radius 14).** A stack of Herdr's `files` and `changes` mods.
+- **Status bar (36 px).**
+  - Working, needs-you and idle counts.
+  - The branch, with ↑ahead ↓behind.
+  - +N −M diff stats for the focused pane's repo.
+
+Themes:
+- `c-studio-dark`: background `#262624`, chrome `#1f1e1d`, accent `#d97757`.
+- `c-studio-light`: warm off-white.
+- Working is amber, blocked is lavender, done is green.
+- Fonts: SF Mono 14 for the terminal, Geist for the UI.
+- Terminal padding is 16×14.
+- Twelve accent variants, `c-studio-{dark,light}-{blue,green,orange,pink,teal,violet}`, differ only in `accent`/`cursor`/`selection`. `c-studio-status` switches to the variant that matches the focused space's color, so the focus border follows the space.
+
+## How it behaves
+
+- **Agent status:**
+  - **Working:** a spinning `workspace-chrome/spinner.svg` in the `working` color.
+  - **Blocked (needs you):** a lavender dot pulsing in opacity (1.4 s).
+  - **Done:** a green dot.
+  - **Idle:** a dim dot.
+  - In the status bar, clicking working / needs you / idle cycles focus through those agents.
+  - ⌘J goes to the next blocked agent in any space.
+- **Dock:**
+  - ⌘B pins or unpins it. It auto-pins when the window is ≥1500 px wide and folds below 1400 px.
+  - Dragging the sidebar edge resizes it (220–520 px, remembered). Narrowing it past the minimum folds it; dragging out of the folded strip pins it.
+  - Clicking the active space collapses its tabs. A collapsed space shows a spinner + count of working agents and a dot + count of done agents. Double-click is ignored.
+  - Right-click a space for color and Rename…
+  - Drag tabs to reorder them, or drop one on another space to move it (the process keeps running).
+  - Hovering a tab shows ×.
+- **Tabs:**
+  - ⌘T and + open a terminal in the current folder.
+  - ⌘W / × on a tab running more than a shell opens `c-studio-close`: Park (the terminal keeps running in the background), Close, or Cancel.
+  - When a space's last tab goes, a "New tab" launcher (`c-studio-launch`) takes its place. The space only closes with its own ×.
+- **Launcher:**
+  - Terminal, or any installed agent (`knownAgents`).
+  - Folder: the folder you came from, a recent folder (⌥1–5), or New worktree… (opens Herdr's `worktree` dialog).
+- **Palette (⌘K / ⌘P, `c-studio-palette`):**
+  - A Spotlight-style popup with fuzzy search over tabs, spaces, agents, actions and parked terminals, recent items first.
+  - ⌘R renames and ⌘⌫ closes the selected item; ↵ on a parked terminal resumes it as a tab.
+  - "Move tab to …" moves the focused tab to another space.
+- **Panel:**
+  - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
+  - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
+- **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
+- **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style, with a Go button when there is a target.
+
+## Built from
+
+- **Layout `layouts/c-studio.json`:**
+  - A `column` root with `titlebar: "none"`, `toast: "c-studio-toast"` and themes light/dark.
+  - Blocks: `tabs`, then `work-body`, then `status`.
+  - `work-body` is a resizable `row`:
+    - `sidebar` column (56 px) holding `dock-docked`, which runs `c-studio-dock` with `props: {docked: true}`;
+    - `main` block with `tab: "active"` and a `pane` style plus a header mod;
+    - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
+  - A floating `dock` on the left edge (`peek: 52`), which is the same mod unpinned.
+- **Mods:**
+  - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view).
+  - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, space colors, program icons. It is identical in dock, tabs, status, palette and close, because imports only resolve inside a mod's folder.
+- **Shipped mods used:**
+  - `files`, `changes` and `worktree`;
+  - `workspace-chrome` for its SVGs (spinner, layers, search, git-branch, terminal).
+- **Commands:**
+  - `tab.*`: new, close, move, rename, select.
+  - `space.*`: new, close, rename, select.
+  - `pane.*`: split, zoom, focus, close.
+  - `terminal.*`: park, keep, kill.
+  - `layout.*`: show, hide, resize, select, switch.
+  - `mod.open`.
+  - `window.*`: minimize, maximize, close.
+  - `app.*`: theme, palette, settings.
+- **Shared keys:**
+  - `dock.pinned`, `dock.width`, `dock.folded`, `space.colors`;
+  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-launch.folders`, `new-menu.agents`.
+- **Programs run:**
+  - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
+  - `hc get/label/keep`, to move a tab's terminal to another space.
+  - `sleep`.
+- **Network:** nothing is fetched, except that git push/pull reaches your remote.
+- **Keys** (`keys.c-studio.json`, section `layout:c-studio`):
+  - ⌘B dock;
+  - ⌘J next waiting agent;
+  - ⌘K / ⌘P palette;
+  - ⌘T new tab, ⌘W close tab;
+  - ⇧⌘E files, ⇧⌘G changes.
+
+## Watch out
+
+- **Install with `./install.sh` when you can.** It copies the layout, the 14 themes and the mods, merges `keys.c-studio.json` into `keys.json`, and installs the optional Copilot CLI status hooks (`hooks/copilot/` → `~/.copilot/hooks`). If you copy only `layouts/` and `mods/`, the themes are missing: also copy `themes/c-studio-*.json` and merge the key section.
+- **macOS only.**
+  - The keys use ⌘, and the glyphs in the UI are hardcoded ⌘ ⌥ ⇧.
+  - On Linux and Windows `cmd` becomes Ctrl, which clashes with terminal keys.
+  - Tested on Herdr 0.1.16.
+- **`space.colors` is shared** with Herdr's `spaces` / `picker` mods: write it by merging, and never delete it.
+- **Sizes and counts:**
+  - The tray shows at most 4 tabs.
+  - The breakpoints (1500 / 1400 / 1100 px) are in `c-studio-tabs`.
+  - The dock is clamped to 220–520 px.
+- **Copilot status:** Copilot CLI reports needs-you only through the hooks. They fire on real permission prompts and `ask_user`, not on `permissionRequest`, which fires for every tool. Other agents rely on Herdr's own detection.
+- **Deliberate choices:** the layout is `resizable: false` at the root, and the sidebar is resized only through `layout.resize` from the dock.
