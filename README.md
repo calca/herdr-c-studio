@@ -1,6 +1,8 @@
-# C-Studio
+<p align="center"><img src="docs/logo.svg" width="128" alt="C-Studio logo"></p>
 
-**A calm, focused studio for your coding agents.**
+<h1 align="center">C-Studio</h1>
+
+<p align="center"><strong>A calm, focused studio for your coding agents.</strong></p>
 
 C-Studio is a layout for [Herdr.app](https://herdr.app) that feels at home on a Mac. Everything you don't need right now steps back; the one agent that needs you comes forward.
 
