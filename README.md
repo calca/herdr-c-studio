@@ -19,6 +19,13 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 - `hooks/copilot/herdr-status.{sh,json}` – Copilot CLI hooks that report the agent status to Herdr (OSC 7501): working, done, and needs you only for a real permission prompt or a question to you (not `permissionRequest`, which fires for every tool); installed in `~/.copilot/hooks`, new Copilot sessions pick them up
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
 
+## Requirements
+
+- macOS and [Herdr.app](https://herdr.app) 0.1.16 or later (the key bindings use ⌘)
+- Herdr's built-in `files`, `changes` and `workspace-chrome` mods (shipped with the app; the side panel and some icons come from them)
+- `python3` for `install.sh` (merges the key bindings)
+- Optional: [GitHub Copilot CLI](https://github.com/github/copilot-cli) for the status hooks; other agents rely on Herdr's own status detection
+
 ## Install
 
 ```bash
