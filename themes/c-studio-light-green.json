@@ -26,10 +26,13 @@
     "working": "#a5761b",
     "blocked": "#6a54c4",
     "done": "#4f7a34",
-    "raised": "#ecebe4",
-    "hover": "#eeede6",
-    "selected": "#e9e8e1",
+    "raised": "#f1efe8",
+    "hover": "#efede6",
+    "selected": "#e6e4dc",
     "chrome": "#f3f2ec",
-    "popover": "#ffffff"
+    "popover": "#ffffff",
+    "foreground": "#141413",
+    "muted": "#6b6963",
+    "dim": "#9a978f"
   }
 }

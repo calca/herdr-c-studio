@@ -27,9 +27,12 @@
     "blocked": "#b49ef0",
     "done": "#8fb573",
     "raised": "#30302e",
-    "hover": "#2e2d2b",
-    "selected": "#353431",
+    "hover": "#353431",
+    "selected": "#3b3a36",
     "chrome": "#1f1e1d",
-    "popover": "#2b2b29"
+    "popover": "#2b2b29",
+    "foreground": "#f0efea",
+    "muted": "#a9a69c",
+    "dim": "#7c7a73"
   }
 }

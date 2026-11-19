@@ -14,6 +14,19 @@ for k in "${kits[@]}"; do
   fi
 done
 
+# Accent variants (c-studio-status picks one per space color): the base theme with another accent
+python3 - "$SRC/themes" <<'PY'
+import json, sys
+home = sys.argv[1]
+ACCENTS = {"blue": "#5b8def", "green": "#3fae6a", "orange": "#e3814f", "pink": "#d9649a", "teal": "#22a99a", "violet": "#8b7cf6"}
+for mode in ("dark", "light"):
+    base = json.load(open(f"{home}/c-studio-{mode}.json"))
+    for name, accent in ACCENTS.items():
+        v = {**base, "colors": {**base["colors"], "accent": accent}}
+        with open(f"{home}/c-studio-{mode}-{name}.json", "w") as f:
+            json.dump(v, f, indent=2); f.write("\n")
+PY
+
 cp "$SRC/layouts/c-studio.json" "$DEST/layouts/"
 cp "$SRC"/themes/{macos,c-studio}-{dark,light}.json "$SRC"/themes/c-studio-{dark,light}-*.json "$DEST/themes/"
 for m in "$SRC"/mods/c-studio-*/; do
