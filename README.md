@@ -15,7 +15,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 - Spaces stay open: when a space's last tab is closed, parked or moved, a "New tab" launcher takes its place (it goes once a real tab opens); a space closes only with its own ×
 - `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
 - `mods/c-studio-toast` – quiet notifications: only errors and warnings show (agent status lives in the dots), in the palette style, with a Go button when they lead somewhere
-- `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color; `themes/macos-{dark,light}.json` – cool alternative
+- `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
 
 ## Install

@@ -28,7 +28,7 @@ for mode in ("dark", "light"):
 PY
 
 cp "$SRC/layouts/c-studio.json" "$DEST/layouts/"
-cp "$SRC"/themes/{macos,c-studio}-{dark,light}.json "$SRC"/themes/c-studio-{dark,light}-*.json "$DEST/themes/"
+cp "$SRC"/themes/c-studio-{dark,light}.json "$SRC"/themes/c-studio-{dark,light}-*.json "$DEST/themes/"
 for m in "$SRC"/mods/c-studio-*/; do
   name="$(basename "$m")"
   rsync -a --delete --exclude gpui-kit.d.ts "$m" "$DEST/mods/$name/"
