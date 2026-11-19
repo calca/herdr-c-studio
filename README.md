@@ -33,6 +33,14 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 herdr-app do layout.switch '{"name":"c-studio"}'
 ```
 
+## Uninstall
+
+```bash
+./uninstall.sh
+```
+
+Switches back to Herdr's `main` layout and removes the C-Studio layout, themes, mods, `layout:c-studio` key bindings (`keys.json` is backed up first) and the Copilot status hooks. Quit Herdr first to also clear the state it remembers (dock width, folded spaces, recent folders).
+
 ## Update the repo after tweaking the layout
 
 ```bash
