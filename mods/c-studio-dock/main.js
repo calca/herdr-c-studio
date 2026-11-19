@@ -133,7 +133,7 @@ export default class StudioDock extends View {
               if (d && d.space !== s.id) cx.spawn(async (c) => { await moveTab(d.tab, s.id); c.notify(); });
             })
             .on_mouse_down("left", (e) => {
-              if (e.click_count === 2) return run("space.rename", { id: s.id });
+              if (e.click_count > 1) return;
               if (s.active && open && s.tabs.length > 0) return this.toggleFold(s.id);
               run("space.select", { id: s.id });
             })
@@ -152,7 +152,11 @@ export default class StudioDock extends View {
             .when(needs > 0 && !hovered, (el) => el.child(
               div().flex_none().px(7).h(18).flex().items_center().rounded(9).bg(t.blocked + "26")
                 .text_size(11.5).font_semibold().text_color(t.blocked).child(`${needs} needs you`)))
-            .when(folded && needs === 0 && !hovered, (el) => el.child(div().flex_none().text_size(13).text_color(t.dim).child("›")))
+            // A folded space still tells what its agents are doing.
+            .when(folded && needs === 0 && !hovered, (el) => el.child(h_flex().flex_none().gap(8).items_center()
+              .children(["working", "done"].map((k) => [k, mine.filter((a) => a.status === k).length]).filter(([, n]) => n > 0)
+                .map(([k, n]) => h_flex().gap(3).items_center().child(this.dot(t, k, 6)).child(div().text_size(11.5).text_color(t[k] ?? t.dim).child(`${n}`))))
+              .child(div().text_size(13).text_color(t.dim).child("›"))))
             .when(!folded && needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(this.shortcut(i + 1))))
             .when(hovered, (el) => el
               .child(this.iconButton(t, `dock-tab-${s.id}`, "+", () => {
