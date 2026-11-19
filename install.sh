@@ -31,4 +31,4 @@ mkdir -p "$HOME/.copilot/hooks"
 cp "$SRC"/hooks/copilot/herdr-status.{sh,json} "$HOME/.copilot/hooks/"
 chmod +x "$HOME/.copilot/hooks/herdr-status.sh"
 
-echo "Installed. Switch with: herdr-app do layout.switch '{\"name\":\"c-studio\"}'"
+echo "Installed C-Studio v$(cat "$SRC/VERSION"). Switch with: herdr-app do layout.switch '{\"name\":\"c-studio\"}'"

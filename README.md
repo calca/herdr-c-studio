@@ -48,6 +48,8 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 herdr-app do layout.switch '{"name":"c-studio"}'
 ```
 
+To install a specific version, check out its tag first (`git checkout v0.1.0`); see [CHANGELOG.md](CHANGELOG.md) for what changed.
+
 ## Uninstall
 
 ```bash
