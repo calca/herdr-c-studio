@@ -2,9 +2,9 @@
 
 <h1 align="center">C-Studio</h1>
 
-<p align="center"><strong>A calm, focused studio for your coding agents.</strong></p>
+<p align="center"><strong>A calm, focused studio for <a href="https://herdr.app">Herdr.app</a>.</strong></p>
 
-C-Studio is a layout for [Herdr.app](https://herdr.app) that feels at home on a Mac. Everything you don't need right now steps back; the one agent that needs you comes forward.
+A layout for your coding agents that feels at home on a Mac. Everything you don't need right now steps back; the one agent that needs you comes forward.
 
 ![C-Studio with the spaces dock pinned, dark theme](docs/dock-dark.png)
 
