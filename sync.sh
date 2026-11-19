@@ -40,4 +40,6 @@ src, dest = sys.argv[1:3]
 json.dump({"layout:c-studio": json.load(open(src))["layout:c-studio"]}, open(dest, "w"), indent=2)
 PY
 
+cp "$HOME"/.copilot/hooks/herdr-status.{sh,json} "$DEST/hooks/copilot/"
+
 git -C "$DEST" status --short

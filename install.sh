@@ -26,4 +26,9 @@ keys.update(json.load(open(src)))
 json.dump(keys, open(dest, "w"), indent=2)
 EOF
 
+# Copilot CLI status hooks (working / needs you / done dots)
+mkdir -p "$HOME/.copilot/hooks"
+cp "$SRC"/hooks/copilot/herdr-status.{sh,json} "$HOME/.copilot/hooks/"
+chmod +x "$HOME/.copilot/hooks/herdr-status.sh"
+
 echo "Installed. Switch with: herdr-app do layout.switch '{\"name\":\"c-studio\"}'"

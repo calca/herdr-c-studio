@@ -16,6 +16,7 @@ Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-pee
 - `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
 - `mods/c-studio-toast` – quiet notifications: only errors and warnings show (agent status lives in the dots), in the palette style, with a Go button when they lead somewhere
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color
+- `hooks/copilot/herdr-status.{sh,json}` – Copilot CLI hooks that report the agent status to Herdr (OSC 7501): working, done, and needs you only for a real permission prompt or a question to you (not `permissionRequest`, which fires for every tool); installed in `~/.copilot/hooks`, new Copilot sessions pick them up
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
 
 ## Install
