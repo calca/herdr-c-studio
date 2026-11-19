@@ -1,8 +1,15 @@
-# herdr-c-studio
+# C-Studio
 
-Custom macOS-style layout for [Herdr.app](https://herdr.app): minimal, hover-peek spaces dock, Claude-inspired warm themes.
+**A calm, focused studio for your coding agents.**
+
+C-Studio is a layout for [Herdr.app](https://herdr.app) that feels at home on a Mac. Everything you don't need right now steps back; the one agent that needs you comes forward.
 
 ![C-Studio with the spaces dock pinned, dark theme](docs/dock-dark.png)
+
+- **Quiet by default.** Warm light and dark themes, soft edges, no noise. Notifications only when something went wrong.
+- **One glance, every agent.** Working, done, or waiting on you – in the dock, the tabs and the status bar. ⌘J takes you to the next one that needs you.
+- **Fits the screen you're on.** On a big monitor the dock stays open; on the laptop it folds away and peeks out on hover.
+- **Nothing gets lost.** Park a running agent instead of closing it, move tabs between spaces, find anything with ⌘K.
 
 | Tab tray, dark | Dock pinned, light | Tab tray, light |
 |---|---|---|
