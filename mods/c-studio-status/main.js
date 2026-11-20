@@ -125,7 +125,9 @@ export default class WorkspaceStatus extends View {
     const pill = (id, color, text, match) => click(h_flex().gap(6).items_center(), id, () => this.goTo(match))
       .child(div().size(6).rounded(3).bg(color)).child(div().text_color(color).child(text));
     return h_flex().size_full().px(8).gap(6).items_center().text_size(12.5).text_color(t.muted)
-      .child(div().px(8).child(label(space?.machine ? "server" : "monitor", space?.machine ?? "This computer")))
+      .child(space?.machine
+        ? div().px(8).child(label("server", space.machine))
+        : div().id("status-machine").h(24).px(8).flex().items_center().tooltip("This computer").child(svg("mods/workspace-chrome/monitor.svg").size(13)))
       .when(Boolean(space?.branch), el => el.child(click(div(), "status-branch", (cx) => this.copyBranch(space.branch, cx))
         .flex().items_center().child(label("branch", this.copied ? "Copied" : space.branch))))
       .when(Boolean(this.diff && (this.diff.plus || this.diff.minus || this.diff.fresh)), el => el.child(click(h_flex().gap(5).items_center(), "status-diff", () => togglePanel("changes"))

@@ -28,6 +28,7 @@ Top to bottom:
       - split-right, split-down, zoom and close buttons that fade in on hover.
   - **Side panel (hidden by default, 280–700 px, radius 14).** A stack of Herdr's `files` and `changes` mods.
 - **Status bar (36 px).**
+  - A monitor icon for this computer (tooltip "This computer"); a remote space shows a server icon and the machine name.
   - Working, needs-you and idle counts.
   - The branch, with ↑ahead ↓behind.
   - +N −M diff stats for the focused pane's repo.
