@@ -1,0 +1,8 @@
+{
+  "place": "none",
+  "title": "C-Studio links",
+  "link_handlers": [
+    { "kind": "file", "pattern": "(?i)\\.(png|jpe?g|gif|webp|svg|heic|bmp|tiff?|pdf)$" },
+    { "kind": "file", "pattern": "(?i)(\\.(ts|tsx|js|jsx|mjs|cjs|json|jsonc|md|mdx|py|rs|go|java|kt|kts|swift|m|mm|rb|php|c|h|cc|cpp|hpp|cs|fs|css|scss|less|html|vue|svelte|astro|yml|yaml|toml|ini|conf|cfg|sh|bash|zsh|fish|sql|graphql|proto|xml|gradle|txt|lock|env|tf|dart|lua|ex|exs|erl|zig|nix)|/(Dockerfile|Makefile|Gemfile|Podfile))$" }
+  ]
+}

@@ -1,25 +1,6 @@
 {
   "id": "root",
   "type": "column",
-  "resizable": false,
-  "theme": {
-    "light": "c-studio-light",
-    "dark": "c-studio-dark"
-  },
-  "font": "SF Mono",
-  "font_size": 14,
-  "ui_font": "Geist",
-  "background": "canvas",
-  "toast": "c-studio-toast",
-  "titlebar": "none",
-  "traffic_lights": [
-    18,
-    22
-  ],
-  "terminal_padding": [
-    16,
-    14
-  ],
   "children": [
     {
       "id": "tabs",
@@ -35,31 +16,10 @@
     {
       "id": "work-body",
       "type": "row",
-      "resizable": true,
-      "padding": [
-        10,
-        10
-      ],
-      "gap": 10,
-      "floating": [
-        {
-          "id": "dock",
-          "content": {
-            "mod": "c-studio-dock"
-          },
-          "edge": "left",
-          "align": "start",
-          "peek": 52
-        }
-      ],
       "children": [
         {
           "id": "sidebar",
           "type": "column",
-          "size": {
-            "px": 56
-          },
-          "resizable": false,
           "children": [
             {
               "id": "dock-docked",
@@ -72,8 +32,12 @@
               }
             }
           ],
+          "size": {
+            "px": 56
+          },
           "min": 56,
-          "max": 520
+          "max": 520,
+          "resizable": false
         },
         {
           "id": "main",
@@ -107,23 +71,10 @@
         {
           "id": "panel",
           "type": "column",
-          "hidden": true,
-          "size": {
-            "px": 360
-          },
-          "min": 280,
-          "max": 700,
-          "background": "background",
-          "border": {
-            "width": 1,
-            "color": "border"
-          },
-          "radius": 14,
           "children": [
             {
               "id": "panel-body",
               "type": "stack",
-              "active": "files",
               "children": [
                 {
                   "id": "files",
@@ -139,9 +90,39 @@
                     "mod": "changes"
                   }
                 }
-              ]
+              ],
+              "active": "files"
             }
-          ]
+          ],
+          "size": {
+            "px": 360
+          },
+          "min": 280,
+          "max": 700,
+          "hidden": true,
+          "background": "background",
+          "border": {
+            "width": 1,
+            "color": "border"
+          },
+          "radius": 14
+        }
+      ],
+      "padding": [
+        10,
+        10
+      ],
+      "gap": 10,
+      "resizable": true,
+      "floating": [
+        {
+          "id": "dock",
+          "content": {
+            "mod": "c-studio-dock"
+          },
+          "edge": "left",
+          "align": "start",
+          "peek": 52
         }
       ]
     },
@@ -155,5 +136,27 @@
         "px": 36
       }
     }
-  ]
+  ],
+  "background": "canvas",
+  "theme": {
+    "light": "c-studio-light",
+    "dark": "c-studio-dark"
+  },
+  "font": "SF Mono",
+  "font_size": 14,
+  "ui_font": "Geist",
+  "terminal_padding": [
+    16,
+    14
+  ],
+  "resizable": false,
+  "titlebar": "none",
+  "traffic_lights": [
+    18,
+    22
+  ],
+  "link_handlers": [
+    "c-studio-links"
+  ],
+  "toast": "c-studio-toast"
 }

@@ -72,12 +72,14 @@ Themes:
   - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
 - **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
+- **⌘-click links (`c-studio-links`):** a code file opens in VS Code at the clicked line (`vscode://file/<path>:<line>:<col>`, from `app.ts:42:7` or `app.ts(42,7)`); images and PDFs open in Quick Look (`qlmanage -p`, in the background). Remote terminals, URLs and other files pass to Herdr.
+- **Pane resize:** ⌃⌘ + arrows run `pane.resize {direction}` (40 px a press).
 - **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style. Herdr sizes only its own `toast` to fit, so this one stays 340×72: the body wraps and scrolls (title `flex_none` so it never shrinks away) and its tooltip holds the full text; with a Go button when there is a target.
 
 ## Built from
 
 - **Layout `layouts/c-studio.json`:**
-  - A `column` root with `titlebar: "none"`, `toast: "c-studio-toast"` and themes light/dark.
+  - A `column` root with `titlebar: "none"`, `toast: "c-studio-toast"`, `link_handlers: ["c-studio-links"]` and themes light/dark.
   - Blocks: `tabs`, then `work-body`, then `status`.
   - `work-body` is a resizable `row`:
     - `sidebar` column (56 px) holding `dock-docked`, which runs `c-studio-dock` with `props: {docked: true}`;
@@ -86,7 +88,7 @@ Themes:
   - A floating `dock` on the left edge (`peek: 52`), which is the same mod unpinned.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
-  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view).
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
   - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, space colors, program icons. It is identical in dock, tabs, status, palette and close, because imports only resolve inside a mod's folder.
 - **Shipped mods used:**
   - `files`, `changes` and `worktree`;
@@ -107,13 +109,15 @@ Themes:
   - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
   - `hc get/label/keep`, to move a tab's terminal to another space.
   - `sleep`.
+  - `open vscode://file/…` and `qlmanage -p`, only on a ⌘-click.
 - **Network:** nothing is fetched, except that git push/pull reaches your remote.
 - **Keys** (`keys.c-studio.json`, section `layout:c-studio`):
   - ⌘B dock;
   - ⌘J next waiting agent;
   - ⌘K / ⌘P palette;
   - ⌘T new tab, ⌘W close tab;
-  - ⇧⌘E files, ⇧⌘G changes.
+  - ⇧⌘E files, ⇧⌘G changes;
+  - ⌃⌘ + arrows resize the pane.
 
 ## Watch out
 

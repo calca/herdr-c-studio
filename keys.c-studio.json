@@ -7,6 +7,30 @@
     "cmd-shift-e": "c-studio-tabs.files",
     "cmd-shift-g": "c-studio-tabs.changes",
     "cmd-t": "c-studio-tabs.new",
-    "cmd-w": "c-studio-tabs.close"
+    "cmd-w": "c-studio-tabs.close",
+    "ctrl-cmd-left": {
+      "command": "pane.resize",
+      "args": {
+        "direction": "left"
+      }
+    },
+    "ctrl-cmd-right": {
+      "command": "pane.resize",
+      "args": {
+        "direction": "right"
+      }
+    },
+    "ctrl-cmd-up": {
+      "command": "pane.resize",
+      "args": {
+        "direction": "up"
+      }
+    },
+    "ctrl-cmd-down": {
+      "command": "pane.resize",
+      "args": {
+        "direction": "down"
+      }
+    }
   }
 }
