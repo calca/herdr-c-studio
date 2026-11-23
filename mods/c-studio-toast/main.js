@@ -59,11 +59,20 @@ export default class StudioToast extends View {
       })
       .child(p.icon ? image(p.icon).w(22).h(22).flex_none() : div().size(10).rounded(5).flex_none().bg(t[DOT[p.level] ?? "accent"]))
       .child(
+        // Herdr grows only its own toast to fit; this one keeps its height, so
+        // a long message wraps and scrolls instead of being cut.
         v_flex()
+          .id("toast-text")
           .flex_1()
-          .overflow_hidden()
-          .child(div().truncate().font_semibold().text_size(14.5).text_color(t.foreground).child(login ? `${login[1]} needs a login: run` : p.title ?? ""))
-          .when(!login && Boolean(p.body), (el) => el.child(div().truncate().text_size(12.5).text_color(t.muted).child(p.body ?? "")))
+          .min_w(0)
+          .h_full()
+          .py(10)
+          .overflow_y_scroll()
+          // Centered when it fits; a long one starts at the title and scrolls.
+          .when(String(p.body ?? "").length < 90, (el) => el.justify_center())
+          .when(!login && Boolean(p.body), (el) => el.tooltip(p.body))
+          .child(div().flex_none().truncate().font_semibold().text_size(14.5).text_color(t.foreground).child(login ? `${login[1]} needs a login: run` : p.title ?? ""))
+          .when(!login && Boolean(p.body), (el) => el.child(div().flex_none().text_size(12.5).text_color(t.muted).child(p.body ?? "")))
           .when(Boolean(login), (el) => el.child(h_flex().gap(8).items_center()
             .child(div().flex_1().min_w(0).truncate().tooltip(command).text_size(12).text_color(t.muted).child(command))
             .child(div().id("toast-login-copy").flex_none().px(6).py(3).rounded(4).bg(t.raised)

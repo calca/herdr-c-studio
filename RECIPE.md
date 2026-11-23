@@ -23,7 +23,7 @@ Top to bottom:
   - **Main.** The active tab's panes:
     - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome.
     - Each pane has a 36 px header (`c-studio-pane`) showing:
-      - the repo-relative folder and git branch;
+      - the pane's name (`pane.rename`), else the program; the repo-relative folder and git branch;
       - a spinner while working;
       - split-right, split-down, zoom and close buttons that fade in on hover.
   - **Side panel (hidden by default, 280–700 px, radius 14).** A stack of Herdr's `files` and `changes` mods.
@@ -72,7 +72,7 @@ Themes:
   - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
 - **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
-- **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style, with a Go button when there is a target.
+- **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style. Herdr sizes only its own `toast` to fit, so this one stays 340×72: the body wraps and scrolls (title `flex_none` so it never shrinks away) and its tooltip holds the full text; with a Go button when there is a target.
 
 ## Built from
 
@@ -121,7 +121,7 @@ Themes:
 - **macOS only.**
   - The keys use ⌘, and the glyphs in the UI are hardcoded ⌘ ⌥ ⇧.
   - On Linux and Windows `cmd` becomes Ctrl, which clashes with terminal keys.
-  - Tested on Herdr 0.1.16.
+  - Tested on Herdr 0.1.17.
 - **`space.colors` is shared** with Herdr's `spaces` / `picker` mods: write it by merging, and never delete it.
 - **Sizes and counts:**
   - The tray shows at most 4 tabs.

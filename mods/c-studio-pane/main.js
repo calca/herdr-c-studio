@@ -89,7 +89,7 @@ export default class Pane extends View {
     if (!p) return div();
     const machine = spaces().find((s) => s.tabs.some((c) => c.id === p.tab))?.machine ?? null;
     this.root(p.cwd, machine, cx);
-    const name = (p.mod && MOD_TITLES[p.mod]) || ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
+    const name = p.name || (p.mod && MOD_TITLES[p.mod]) || ((p.program?.agent || p.program?.shell) && p.program.name) || p.title || p.program?.name || "shell";
     const pic = icon(p.program, 16, t.dim);
     const st = p.status;
     const pane = p.pane;
