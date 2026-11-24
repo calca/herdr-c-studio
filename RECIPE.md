@@ -73,7 +73,7 @@ Themes:
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
 - **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
 - **⌘-click links (`c-studio-links`):** a code file opens in VS Code at the clicked line (`vscode://file/<path>:<line>:<col>`; Herdr passes `link.line`/`link.column`, and `app.ts(42,7)` is parsed from `link.raw`); images and PDFs open in Quick Look (`qlmanage -p`, in the background). Remote terminals, URLs and other files pass to Herdr.
-- **Pane resize:** ⌃⌘ + arrows run `pane.resize {direction}` (40 px a press).
+- **Pane resize:** ⌘⇧ + arrows run `pane.resize {direction}` (40 px a press). Not ⌃⌘: macOS swallows it before Herdr sees it.
 - **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style. Herdr sizes only its own `toast` to fit, so this one stays 340×72: the body wraps and scrolls (title `flex_none` so it never shrinks away) and its tooltip holds the full text; with a Go button when there is a target.
 
 ## Built from
@@ -117,7 +117,7 @@ Themes:
   - ⌘K / ⌘P palette;
   - ⌘T new tab, ⌘W close tab;
   - ⇧⌘E files, ⇧⌘G changes;
-  - ⌃⌘ + arrows resize the pane.
+  - ⌘⇧ + arrows resize the pane.
 
 ## Watch out
 

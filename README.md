@@ -31,7 +31,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - Spaces stay open: when a space's last tab is closed, parked or moved, a "New tab" launcher takes its place (it goes once a real tab opens); a space closes only with its own ×
 - `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
 - `mods/c-studio-links` – ⌘-click in a terminal: a code file opens in VS Code at the clicked line (`app.ts:42:7`), an image or PDF in Quick Look; remote terminals and everything else keep Herdr's handling
-- Pane resize from the keyboard: ⌃⌘ + arrows
+- Pane resize from the keyboard: ⌘⇧ + arrows
 - `mods/c-studio-toast` – quiet notifications: only errors and warnings show (agent status lives in the dots), in the palette style (long messages wrap and scroll; hover for the full text), with a Go button when they lead somewhere
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color
 - `hooks/copilot/herdr-status.{sh,json}` – Copilot CLI hooks that report the agent status to Herdr (OSC 7501): working, done, and needs you only for a real permission prompt or a question to you (not `permissionRequest`, which fires for every tool); installed in `~/.copilot/hooks`, new Copilot sessions pick them up
