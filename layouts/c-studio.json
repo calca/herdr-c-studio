@@ -64,7 +64,8 @@
               },
               "radius": 14,
               "gap": 10,
-              "lone": true
+              "lone": true,
+              "veil": 0.35
             }
           }
         },

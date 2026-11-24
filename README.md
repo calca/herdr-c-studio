@@ -22,6 +22,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - `layouts/c-studio.json` – the layout
 - `mods/c-studio-dock` – floating spaces dock with all tabs, same look pinned or floating (peek on hover, pin with ⌘B; drag its edge to resize it (220–520 px, remembered), narrow to fold it, or out of the folded strip to pin it; auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs (a collapsed space shows how many agents are working or done); spaces in their colors (right-click a space to pick one or rename it), program icons in one color, drag to reorder tabs or drop one on another space to move it, × on hover)
 - `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill in the space color, status dot first; centered in one rounded tray with at most 4 tabs (the active one always shown), round ⌄ and + buttons beside it (⌄ badges how many tabs are hidden and lists them), round F / C panel toggles on the right; ⌘J jumps to the next agent that needs you, in any space
+- Panes you are not in fade a little (`veil` on the pane frame), so the one you work in stands out
 - `mods/c-studio-pane` – terminal pane header: the pane's name if you gave it one (else the program), repo-relative folder and git branch; buttons fade in on hover; a maximized pane shows "+N hidden" (click to restore), and its tab gets a badge
 - `mods/c-studio-status` – status bar; a monitor icon for this computer (remote spaces show the machine name); click working / needs you / idle to cycle agents, click the branch to copy it; ↑ahead ↓behind pushes or fast-forward pulls
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, ⌘R renames and ⌘⌫ closes the selected tab, "Move tab to …" moves the focused tab to another space (processes keep running); parked terminals are listed too (↵ resumes one as a tab, ⌘⌫ ends it)
@@ -39,7 +40,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 
 ## Requirements
 
-- macOS and [Herdr.app](https://herdr.app) 0.1.17 or later (the key bindings use ⌘)
+- macOS and [Herdr.app](https://herdr.app) 0.1.18 or later (the key bindings use ⌘)
 - Herdr's built-in `files`, `changes` and `workspace-chrome` mods (shipped with the app; the side panel and some icons come from them)
 - `python3` for `install.sh` (merges the key bindings)
 - Optional: [Visual Studio Code](https://code.visualstudio.com) for ⌘-click on code files

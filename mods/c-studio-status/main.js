@@ -12,8 +12,9 @@ const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.a
 export default class WorkspaceStatus extends View {
   init(_props, cx) {
     this.diff = null;
-    cx.timer.every(5000, (c) => this.refresh(c));
-    cx.timer.every(250, () => this.syncAccent());
+    // Git polls only while the window shows; it catches up within 5 s of coming back.
+    cx.timer.every(5000, (c) => { if (window()?.visible !== false) this.refresh(c); });
+    cx.timer.every(250, () => { if (window()?.visible !== false) this.syncAccent(); });
   }
 
   // Where git runs: the focused pane's folder, as the Changes panel does.

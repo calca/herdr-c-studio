@@ -21,7 +21,7 @@ Top to bottom:
     - The spaces dock, one row per space: a color square with the initial, the name, and the space's tabs beneath it. Each tab row has a monochrome program icon, a name, a status dot or spinner, and an "ago" time.
     - When the dock is not pinned, a 56 px icon strip peeks out. Hovering it slides the same dock in as a floating overlay on the left edge.
   - **Main.** The active tab's panes:
-    - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome.
+    - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome. `veil: 0.35` fades the panes you are not in.
     - Each pane has a 36 px header (`c-studio-pane`) showing:
       - the pane's name (`pane.rename`), else the program; the repo-relative folder and git branch;
       - a spinner while working;
@@ -72,7 +72,7 @@ Themes:
   - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
 - **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
-- **⌘-click links (`c-studio-links`):** a code file opens in VS Code at the clicked line (`vscode://file/<path>:<line>:<col>`, from `app.ts:42:7` or `app.ts(42,7)`); images and PDFs open in Quick Look (`qlmanage -p`, in the background). Remote terminals, URLs and other files pass to Herdr.
+- **⌘-click links (`c-studio-links`):** a code file opens in VS Code at the clicked line (`vscode://file/<path>:<line>:<col>`; Herdr passes `link.line`/`link.column`, and `app.ts(42,7)` is parsed from `link.raw`); images and PDFs open in Quick Look (`qlmanage -p`, in the background). Remote terminals, URLs and other files pass to Herdr.
 - **Pane resize:** ⌃⌘ + arrows run `pane.resize {direction}` (40 px a press).
 - **Toasts (`c-studio-toast`):** only errors and warnings are shown, in the palette style. Herdr sizes only its own `toast` to fit, so this one stays 340×72: the body wraps and scrolls (title `flex_none` so it never shrinks away) and its tooltip holds the full text; with a Go button when there is a target.
 
@@ -125,7 +125,7 @@ Themes:
 - **macOS only.**
   - The keys use ⌘, and the glyphs in the UI are hardcoded ⌘ ⌥ ⇧.
   - On Linux and Windows `cmd` becomes Ctrl, which clashes with terminal keys.
-  - Tested on Herdr 0.1.17.
+  - Tested on Herdr 0.1.18 (`veil` and link line/column need it).
 - **`space.colors` is shared** with Herdr's `spaces` / `picker` mods: write it by merging, and never delete it.
 - **Sizes and counts:**
   - The tray shows at most 4 tabs.
