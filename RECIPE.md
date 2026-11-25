@@ -86,7 +86,7 @@ Themes:
     - `main` block with `tab: "active"` and a `pane` style plus a header mod;
     - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
   - A floating `dock` copy that draws nothing and only handles ⌘B: Herdr paints a floating block's frame with the solid theme background, so it can't be glass.
-  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at ~35% (dark) / 45% (light) and a translucent `border`; tab tray and dock use a light `foreground` tint, hover and selection translucent tints. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
+  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 45% and a translucent `border`; tab tray and dock use `glass(t)` from `kit.js`, the canvas tint at an alpha that brings the total cover to 60% whatever the canvas alpha; hover and selection are translucent tints. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
   - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).

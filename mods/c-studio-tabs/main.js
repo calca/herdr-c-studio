@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand, agents } from "herdr";
-import { find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon } from "./kit.js";
+import { glass, find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -13,7 +13,7 @@ const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧
 // A round button in the tray's style: same height, border and fill.
 function round(t, id) {
   return div().id(id).size(38).flex().flex_none().items_center().justify_center().rounded(19)
-    .bg(t.foreground + "0f").text_color(t.muted).cursor_pointer()
+    .bg(glass(t)).text_color(t.muted).cursor_pointer()
     .hover(s => s.bg(t.foreground + "14").text_color(t.foreground));
 }
 
@@ -193,7 +193,7 @@ export default class Tabs extends View {
         .child(round(t, "dock-open").on_mouse_down("left", stop).on_click(() => pinDock(true))
           .child(svg("mods/workspace-chrome/layers.svg").size(15))))
       .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).p(3).gap(3).items_center().rounded(19)
-        .bg(t.foreground + "0f")
+        .bg(glass(t))
         .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
           .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
           .children(shown.map(item))))
@@ -201,7 +201,7 @@ export default class Tabs extends View {
         .on_click(() => { setShared("c-studio-palette.space", space?.id ?? null); run("mod.open", { name: "c-studio-palette" }); })
         .child(svg("mods/workspace-chrome/chevron-down.svg").size(14))
         .when(more > 0, b => b.child(div().absolute().top(-3).right(-3).min_w(16).h(16).px(4).flex().items_center().justify_center()
-          .rounded(8).bg(t.raised).border(1).border_color(t.border).text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
+          .rounded(8).bg(t.foreground + "33").text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
       .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
       .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))

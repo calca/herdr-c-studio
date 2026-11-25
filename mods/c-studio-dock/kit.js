@@ -183,3 +183,10 @@ export async function moveTab(tabId, spaceId) {
   }
   return false;
 }
+
+// The window's own tint, denser: over the translucent canvas the total reaches `cover`.
+export function glass(t, cover = 0.6) {
+  const under = parseInt(t.canvas.slice(7, 9) || "ff", 16) / 255;
+  const a = under >= 1 ? 0 : Math.max(0, 1 - (1 - cover) / (1 - under));
+  return t.canvas.slice(0, 7) + Math.round(a * 255).toString(16).padStart(2, "0");
+}

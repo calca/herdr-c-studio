@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys, layout } from "herdr";
-import { SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon } from "./kit.js";
+import { glass, SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -142,7 +142,7 @@ export default class StudioDock extends View {
             .on_mouse_down("right", (_e, cx) => { this.picking = this.picking === s.id ? null : s.id; cx.notify(); })
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
-                .when(s.active, (d) => d.bg(color + "33"))
+                .bg(color + (s.active ? "4d" : "26"))
                 .text_color(color)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
@@ -150,7 +150,7 @@ export default class StudioDock extends View {
                   .when(s.status === "working" || s.status === "blocked", (d) => d.loop("opacity", { from: 0.35, to: 1, period: s.status === "blocked" ? 1400 : 1800 })))))
             .child(v_flex().flex_1().min_w(0).gap(1)
               .child(div().truncate().text_size(14.5).font_medium().when(s.active, (d) => d.font_semibold()).text_color(s.active ? t.foreground : t.muted).child(s.name))
-              .child(div().truncate().text_size(11.5).text_color(t.dim).child(sub)))
+              .child(div().truncate().text_size(11.5).text_color(t.muted).child(sub)))
             .when(needs > 0 && !hovered, (el) => el.child(
               div().flex_none().px(7).h(18).flex().items_center().rounded(9).bg(t.blocked + "26")
                 .text_size(11.5).font_semibold().text_color(t.blocked).child(`${needs} needs you`)))
@@ -159,7 +159,7 @@ export default class StudioDock extends View {
               .children(["working", "done"].map((k) => [k, mine.filter((a) => a.status === k).length]).filter(([, n]) => n > 0)
                 .map(([k, n]) => h_flex().gap(3).items_center().child(this.dot(t, k, 6)).child(div().text_size(11.5).text_color(t[k] ?? t.dim).child(`${n}`))))
               .child(div().text_size(13).text_color(t.dim).child("›"))))
-            .when(!folded && needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.dim).child(this.shortcut(i + 1))))
+            .when(!folded && needs === 0 && !hovered && i < 9, (el) => el.child(div().flex_none().text_size(11.5).text_color(t.muted).child(this.shortcut(i + 1))))
             .when(hovered, (el) => el
               .child(this.iconButton(t, `dock-tab-${s.id}`, "+", () => {
                 const active = s.tabs.find((c) => c.active) ?? s.tabs[0];
@@ -209,18 +209,18 @@ export default class StudioDock extends View {
     };
 
     const footerButton = (id, glyph, label, action) =>
-      h_flex().id(id).flex_none().h(36).px(8).gap(10).items_center().rounded(10).text_color(t.dim)
+      h_flex().id(id).flex_none().h(36).px(8).gap(10).items_center().rounded(10).text_color(t.muted)
         .hover((x) => x.bg(t.foreground + "14").text_color(t.foreground)).on_click(action)
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(t.canvas.slice(0, 7) + "3b").rounded(16))
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
-          .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.dim)))
-          .child(div().flex_1().text_size(11).font_semibold().text_color(t.dim).child("SPACES"))
+          .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))
+          .child(div().flex_1().text_size(11).font_semibold().text_color(t.muted).child("SPACES"))
           .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`)))
           .child(this.iconButton(t, "dock-pin", pinned ? "◧" : "◨", () => this.setPinned(!pinned))))
       // Only the spaces scroll; the head and "New space" stay in view.
