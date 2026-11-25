@@ -187,7 +187,7 @@ export default class StudioDock extends View {
           const dropHere = this.drag && this.drag.space === s.id && this.drag.tab !== c.id && over;
           return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
             .relative().hover((x) => x.bg(t.foreground + "14"))
-            .when(focused, (el) => el.bg(color + "1F").font_semibold())
+            .when(focused, (el) => el.bg(t.foreground + "1a").font_semibold())
             .when(dropHere, (el) => el.bg(t.foreground + "14"))
             .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
             .on_mouse_down("left", (e) => {
