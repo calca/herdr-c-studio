@@ -15,6 +15,8 @@
     "ctrl-cmd-left": "tab.prev",
     "ctrl-cmd-right": "tab.next",
     "ctrl-cmd-up": "space.prev",
-    "ctrl-cmd-down": "space.next"
+    "ctrl-cmd-down": "space.next",
+    "ctrl-tab": "c-studio-tabs.switch",
+    "ctrl-shift-tab": "c-studio-tabs.switch_back"
   }
 }

@@ -68,6 +68,10 @@ Themes:
   - A Spotlight-style popup with fuzzy search over tabs, spaces, agents, actions and parked terminals, recent items first.
   - ⌘R renames and ⌘⌫ closes the selected item; ↵ on a parked terminal resumes it as a tab.
   - "Move tab to …" moves the focused tab to another space.
+- **Switcher (⌃Tab / ⌃⇧Tab, `c-studio-switch`):**
+  - Like ⌘Tab for apps: recent tabs across all spaces, newest first, with status, program icon and space.
+  - Tab / ⇧Tab (or ↑ / ↓) step while ⌃ is held; releasing ⌃ selects, Esc cancels. The list fades in after 140 ms, so a quick ⌃Tab just flips back.
+  - `c-studio-tabs` records the recent order (`c-studio.recent`) and runs `switch` / `switch_back`, which open the popup or step it.
 - **Panel:**
   - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
@@ -89,7 +93,7 @@ Themes:
   - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 55% and a translucent `border`; the dock uses `glass(t)` from `kit.js` (the canvas tint at an alpha that brings the total cover to 65% whatever the canvas alpha). Tabs and the round header buttons (dock toggle, ⌄, +, F, C) share one look: 60% glass, 65% under the pointer, and when selected 65% mixed with the space color. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
-  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
   - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, space colors, program icons. It is identical in dock, tabs, status, palette and close, because imports only resolve inside a mod's folder.
 - **Shipped mods used:**
   - `files`, `changes` and `worktree`;
@@ -105,7 +109,7 @@ Themes:
   - `app.*`: theme, palette, settings.
 - **Shared keys:**
   - `dock.pinned`, `dock.width`, `dock.folded`, `space.colors`;
-  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-launch.folders`, `new-menu.agents`.
+  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio.recent`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
 - **Programs run:**
   - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
   - `hc get/label/keep`, to move a tab's terminal to another space.

@@ -8,6 +8,8 @@ const NARROW_AT = 1400;
 const PANEL_MIN = 1100;
 const SWIPE = 80;
 const MAX_TABS = 4;
+const RECENT = "c-studio.recent";
+const SWITCH = "c-studio-switch";
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
 
 // The selected look: 65% glass mixed with a little of the space color.
@@ -30,6 +32,7 @@ function round(t, id, on = false) {
 export default class Tabs extends View {
   init(_props, cx) {
     this.pressed = null;
+    if (shared(SWITCH)) setShared(SWITCH, null);
     cx.spawn(async (c) => {
       for (;;) {
         const cmd = await nextCommand();
@@ -37,6 +40,7 @@ export default class Tabs extends View {
         else if (cmd === "close") closeTab(focused()?.tab);
         else if (cmd === "files" || cmd === "changes") togglePanel(cmd);
         else if (cmd === "waiting") this.nextWaiting();
+        else if (cmd === "switch" || cmd === "switch_back") this.switcher(cmd === "switch" ? 1 : -1);
         c.notify();
       }
     });
@@ -51,6 +55,24 @@ export default class Tabs extends View {
     const a = list[(list.findIndex((a) => a.focused) + 1) % list.length];
     run("tab.select", { id: a.tab });
     run("pane.focus", { pane: a.pane });
+  }
+
+  // ctrl+tab: open the recent-tabs switcher, or step it when it is already open.
+  switcher(step) {
+    const open = shared(SWITCH);
+    if (open?.overlay) {
+      if (open.by === "switch" && Date.now() - open.at < 50) return;
+      return setShared(SWITCH, { ...open, step: (open.step ?? 0) + step, by: "tabs", at: Date.now() });
+    }
+    setShared(SWITCH, { step });
+    run("mod.open", { name: "c-studio-switch" });
+  }
+
+  // Most recently used tabs, newest first, across spaces.
+  trackRecent() {
+    const tab = spaces().find((s) => s.active)?.tabs.find((c) => c.active)?.id;
+    const list = shared(RECENT) ?? [];
+    if (tab && list[0] !== tab) setShared(RECENT, [tab, ...list.filter((id) => id !== tab)].slice(0, 30));
   }
 
   newTab() {
@@ -134,6 +156,7 @@ export default class Tabs extends View {
     const t = theme();
     const space = spaces().find(p => p.active);
     this.syncPanel(space, PANELS.map(([id]) => id));
+    this.trackRecent();
     const w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;

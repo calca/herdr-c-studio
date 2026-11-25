@@ -25,6 +25,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - Panes you are not in fade a little (`veil` on the pane frame), so the one you work in stands out
 - `mods/c-studio-pane` – terminal pane header: the pane's name if you gave it one (else the program), repo-relative folder and git branch; buttons fade in on hover; a maximized pane shows "+N hidden" (click to restore), and its tab gets a badge
 - `mods/c-studio-status` – status bar; a monitor icon for this computer (remote spaces show the machine name); click working / needs you / idle to cycle agents, click the branch to copy it; ↑ahead ↓behind pushes or fast-forward pulls
+- `mods/c-studio-switch` – ⌃Tab switcher, like ⌘Tab for apps: hold ⌃ and press Tab (⇧Tab goes back) to walk your recent tabs across all spaces, release ⌃ to go there; a quick ⌃Tab flips to the previous tab, Esc cancels
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, ⌘R renames and ⌘⌫ closes the selected tab, "Move tab to …" moves the focused tab to another space (processes keep running); parked terminals are listed too (↵ resumes one as a tab, ⌘⌫ ends it)
 - Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
 - `mods/c-studio-close` – × / ⌘W on a tab running more than a shell asks: Park (keep it running in the background), Close, or Cancel

@@ -1,0 +1,1 @@
+{ "place": "none", "title": "C-Studio switcher", "overlay": { "kind": "popup", "frame": "none", "at": "top", "offset": 150, "width": 520, "height": 0.7 } }
