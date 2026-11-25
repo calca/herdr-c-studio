@@ -1,11 +1,29 @@
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared, setShared, notify } from "herdr";
+import { spaces, agents, panes, focused, exec, theme, run, window, keys, shared, setShared, notify, readTextFile, appHome, checking, openOverlay } from "herdr";
 import { togglePanel, moveTab } from "./kit.js";
 
 const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 // Space color -> theme variant, so the focus border (accent) follows the space.
 const ACCENT = { ansi6: "teal", ansi3: "orange", ansi4: "blue", ansi5: "violet", ansi2: "green", ansi1: "pink" };
+
+// Update notice: install.sh writes c-studio.json ({version, source}); tags of the source
+// clone (else GitHub's) say whether a newer release exists.
+const REPO = "calca/herdr-c-studio";
+const UPDATE = "c-studio-update";
+const CHECK_EVERY = 6 * 3600 * 1000;
+const semver = (v) => (/^v?(\d+)\.(\d+)\.(\d+)$/.exec((v ?? "").trim()) ?? []).slice(1).map(Number);
+function newer(a, b) {
+  const x = semver(a), y = semver(b);
+  if (x.length < 3 || y.length < 3) return false;
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
+  return false;
+}
+// The CHANGELOG sections after the installed version, as plain text.
+function notesSince(md, installed) {
+  return md.split(/^## /m).slice(1).filter((sec) => newer(/^\[?([\d.]+)/.exec(sec)?.[1], installed))
+    .map((sec) => sec.replace(/\*\*/g, "").trim()).join("\n\n").slice(0, 6000) || null;
+}
 
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
 
@@ -15,6 +33,10 @@ export default class WorkspaceStatus extends View {
     // Git polls only while the window shows; it catches up within 5 s of coming back.
     cx.timer.every(5000, (c) => { if (window()?.visible !== false) this.refresh(c); });
     cx.timer.every(250, () => { if (window()?.visible !== false) this.syncAccent(); });
+    if (!checking()) {
+      cx.timer.after(8000, (c) => this.checkUpdate(c));
+      cx.timer.every(30 * 60 * 1000, (c) => this.checkUpdate(c));
+    }
   }
 
   // Where git runs: the focused pane's folder, as the Changes panel does.
@@ -95,6 +117,43 @@ export default class WorkspaceStatus extends View {
     cx.timer.after(1200, (c) => { this.copied = false; c.notify(); });
   }
 
+  async checkUpdate(cx) {
+    const st = shared(UPDATE);
+    if (this.checkingUpdate || (st?.checked_at && Date.now() - st.checked_at < CHECK_EVERY)) return;
+    this.checkingUpdate = true;
+    try {
+      let inst = null;
+      try { inst = JSON.parse(await readTextFile(`${appHome()}/c-studio.json`) ?? "null"); } catch { inst = null; }
+      if (!inst?.version) return;
+      const run = (cmd, args, timeout = 20000) => exec(cmd, args, { timeout }).catch(() => ({ code: 1, stdout: "", stderr: "" }));
+      let tags = [], git = false;
+      if (inst.source) {
+        await run("git", ["-C", inst.source, "fetch", "-q", "--tags"]);
+        const r = await run("git", ["-C", inst.source, "tag", "-l", "v*"], 5000);
+        if (r.code === 0) { git = true; tags = r.stdout.split("\n"); }
+      }
+      if (!git) {
+        const r = await run("curl", ["-fsSL", "--max-time", "10", `https://api.github.com/repos/${REPO}/tags`]);
+        try { if (r.code === 0) tags = JSON.parse(r.stdout).map((x) => x.name); } catch { tags = []; }
+      }
+      const latest = tags.map((x) => x.trim()).filter((x) => semver(x).length === 3)
+        .reduce((best, x) => (!best || newer(x, best) ? x : best), null);
+      let notes = null;
+      if (latest && newer(latest, inst.version)) {
+        const log = git ? await run("git", ["-C", inst.source, "show", `${latest}:CHANGELOG.md`], 5000)
+          : await run("curl", ["-fsSL", "--max-time", "10", `https://raw.githubusercontent.com/${REPO}/${latest}/CHANGELOG.md`]);
+        notes = log.code === 0 ? notesSince(log.stdout, inst.version) : null;
+      }
+      setShared(UPDATE, {
+        checked_at: Date.now(), installed: inst.version, source: git ? inst.source : null, notes,
+        latest: latest && newer(latest, inst.version) ? latest.replace(/^v/, "") : null,
+      });
+    } finally {
+      this.checkingUpdate = false;
+      cx.notify();
+    }
+  }
+
   syncAccent() {
     const space = spaces().find((s) => s.active);
     const name = space && space.name !== "~" ? ACCENT[shared("space.colors")?.[space.id]] : null;
@@ -116,6 +175,7 @@ export default class WorkspaceStatus extends View {
     }
     if (JSON.stringify(this.where()) !== this.at) this.refresh(cx);
     const space = spaces().find(s => s.active);
+    const update = shared(UPDATE);
     const list = agents();
     const count = (st) => list.filter(a => a.status === st).length;
     const working = count("working"), needs = count("blocked");
@@ -142,6 +202,9 @@ export default class WorkspaceStatus extends View {
         .when(this.diff.ahead > 0, (d) => d.child(div().child(`↑${this.diff.ahead}`)))
         .when(this.diff.behind > 0, (d) => d.child(div().child(`↓${this.diff.behind}`)))))
       .child(div().flex_1())
+      .when(Boolean(update?.latest && update.latest !== update.skipped), el => el.child(click(h_flex().gap(6).items_center(), "status-update",
+        () => openOverlay({ mod: "c-studio-update", kind: "dialog", width: 520, height: 440 })).tooltip("What's new")
+        .child(div().size(6).rounded(3).bg(t.accent)).child(div().text_color(t.accent).child(`C-Studio ${update.latest}`))))
       .when(working > 0, el => el.child(pill("status-working", t.working, `${working} working`, (a) => a.status === "working")))
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))
       .when(idle > 0 || list.length === 0, el => el.child(pill("status-idle", t.dim, list.length === 0 ? "no agents" : `${idle} idle`,

@@ -31,4 +31,11 @@ mkdir -p "$HOME/.copilot/hooks"
 cp "$SRC"/hooks/copilot/herdr-status.{sh,json} "$HOME/.copilot/hooks/"
 chmod +x "$HOME/.copilot/hooks/herdr-status.sh"
 
+# What is installed and where from, for the update notice in the status bar
+python3 - "$DEST/c-studio.json" "$(cat "$SRC/VERSION")" "$SRC" <<'EOF2'
+import json, os, sys
+path, version, src = sys.argv[1:4]
+json.dump({"version": version, "source": src if os.path.isdir(os.path.join(src, ".git")) else None}, open(path, "w"), indent=2)
+EOF2
+
 echo "Installed C-Studio v$(cat "$SRC/VERSION"). Switch with: herdr-app do layout.switch '{\"name\":\"c-studio\"}'"

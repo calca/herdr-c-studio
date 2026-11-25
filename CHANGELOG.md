@@ -17,6 +17,7 @@ First public release.
 - **Palette** – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions; rename, close, move tabs between spaces, resume parked terminals.
 - **Launcher** – new tab with a terminal or an installed agent, in a recent folder (⌥1–5) or a new worktree.
 - **Close dialog** – park a running agent instead of closing it.
+- **Update notice** – the status bar tells you when a new C-Studio release is out; one click shows what's new and installs it.
 - **Pane header and status bar** – folder, branch, ahead/behind with push and pull, quiet notifications.
 - **Glass window** – frosted, translucent window frame with a light glass tab tray and spaces dock; terminals stay solid inside rounded pane cards.
 - **Themes** – warm light and dark palettes; the focus border follows the space color.

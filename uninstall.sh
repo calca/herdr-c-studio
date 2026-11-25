@@ -7,7 +7,7 @@ DEST="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 # Leave the layout first, while its files still exist (needs Herdr running; harmless otherwise)
 herdr-app do layout.switch '{"name":"main"}' >/dev/null 2>&1 || true
 
-rm -f "$DEST/layouts/c-studio.json" "$DEST"/themes/c-studio-*.json
+rm -f "$DEST/layouts/c-studio.json" "$DEST"/themes/c-studio-*.json "$DEST/c-studio.json"
 rm -rf "$DEST"/mods/c-studio-*/
 
 # Drop the layout:c-studio key bindings, keeping a copy of keys.json
