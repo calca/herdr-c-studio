@@ -207,23 +207,25 @@ export default class StudioDock extends View {
     };
 
     const footerButton = (id, glyph, label, action) =>
-      h_flex().id(id).h(36).px(8).gap(10).items_center().rounded(10).text_color(t.dim)
+      h_flex().id(id).flex_none().h(36).px(8).gap(10).items_center().rounded(10).text_color(t.dim)
         .hover((x) => x.bg(t.hover).text_color(t.foreground)).on_click(action)
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().bg(t.popover).rounded(16).border(1).border_color(t.border).overflow_y_scrollbar())
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(t.popover).rounded(16).border(1).border_color(t.border))
       .child(
-        h_flex().id("dock-head").h(30).px(8).items_center().gap(10)
+        h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.dim)))
           .child(div().flex_1().text_size(11).font_semibold().text_color(t.dim).child("SPACES"))
           .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`)))
           .child(this.iconButton(t, "dock-pin", pinned ? "◧" : "◨", () => this.setPinned(!pinned))))
-      .children(all.map(row))
+      // Only the spaces scroll; the head and "New space" stay in view.
+      .child(v_flex().id("dock-list").gap(6).when(this.docked, (el) => el.flex_1().min_h(0).overflow_y_scroll())
+        .children(all.map((s, i) => row(s, i).flex_none())))
       // Closed, only the icon column peeks out: keep the line under the icons.
-      .child(div().h(1).my(2).bg(t.border).when(open, (d) => d.mx(8)).when(!open, (d) => d.w(30).ml(8)))
+      .child(div().flex_none().h(1).my(2).bg(t.border).when(open, (d) => d.mx(8)).when(!open, (d) => d.w(30).ml(8)))
       .child(footerButton("dock-new", "+", "New space", () => run("space.new")));
   }
 }
