@@ -215,9 +215,9 @@ export default class Tabs extends View {
           .children(shown.map(item))))
       .when(overflow, el => el.child(round(t, "tab-more").relative().on_mouse_down("left", stop)
         .on_click(() => { setShared("c-studio-palette.space", space?.id ?? null); run("mod.open", { name: "c-studio-palette" }); })
-        .child(svg("mods/workspace-chrome/chevron-down.svg").size(14))
-        .when(more > 0, b => b.child(div().absolute().top(-3).right(-3).min_w(16).h(16).px(4).flex().items_center().justify_center()
-          .rounded(8).bg(glass(t, 0.8)).text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
+        // The hidden count sits inside the button: a translucent badge over it would show a crescent.
+        .when(more > 0, b => b.w(54).gap(3).child(div().text_size(12.5).font_semibold().text_color(t.foreground).child(`${more}`)))
+        .child(svg("mods/workspace-chrome/chevron-down.svg").size(more > 0 ? 12 : 14))))
       .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
       .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))

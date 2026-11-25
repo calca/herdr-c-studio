@@ -142,7 +142,7 @@ export default class StudioDock extends View {
             .on_mouse_down("right", (_e, cx) => { this.picking = this.picking === s.id ? null : s.id; cx.notify(); })
             .child(div().relative().size(30).flex_none()
               .child(div().size(30).flex().items_center().justify_center().rounded(15)
-                .bg(color + (s.active ? "4d" : "26"))
+                .bg(color + (s.active ? "1f" : "0f"))
                 .text_color(color)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
