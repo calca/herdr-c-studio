@@ -48,7 +48,7 @@ export default class StudioToast extends View {
       .px(18)
       .gap(14)
       .items_center()
-      .bg(t.popover)
+      .bg(t.popover.slice(0, 7) + "eb")
       .opacity(this.shown ? 1 : 0)
       .transition("opacity", { duration: 180, easing: "ease-out" })
       .cursor_pointer()

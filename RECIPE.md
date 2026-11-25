@@ -19,7 +19,7 @@ Top to bottom:
 - **Body row** (10 px padding, 10 px gap):
   - **Sidebar (56–520 px).**
     - The spaces dock, one row per space: a color square with the initial, the name, and the space's tabs beneath it. Each tab row has a monochrome program icon, a name, a status dot or spinner, and an "ago" time.
-    - When the dock is not pinned, a 56 px icon strip peeks out. Hovering it slides the same dock in as a floating overlay on the left edge.
+    - When the dock is not pinned, it hides completely and the window edges match. A round layers button at the left of the tab bar pins it again; spaces also switch with ⌃1–9 and ⌘K.
   - **Main.** The active tab's panes:
     - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome. `veil: 0.35` fades the panes you are not in.
     - Each pane has a 36 px header (`c-studio-pane`) showing:
@@ -52,7 +52,7 @@ Themes:
   - ⌘J goes to the next blocked agent in any space.
 - **Dock:**
   - ⌘B pins or unpins it. It auto-pins when the window is ≥1500 px wide and folds below 1400 px.
-  - Dragging the sidebar edge resizes it (220–520 px, remembered). Narrowing it past the minimum folds it; dragging out of the folded strip pins it.
+  - Dragging the sidebar edge resizes it (220–520 px, remembered). Narrowing it past the minimum folds it.
   - Clicking the active space collapses its tabs. A collapsed space shows a spinner + count of working agents and a dot + count of done agents. Double-click is ignored.
   - Right-click a space for color and Rename…
   - Drag tabs to reorder them, or drop one on another space to move it (the process keeps running).
@@ -82,10 +82,11 @@ Themes:
   - A `column` root with `titlebar: "none"`, `toast: "c-studio-toast"`, `link_handlers: ["c-studio-links"]` and themes light/dark.
   - Blocks: `tabs`, then `work-body`, then `status`.
   - `work-body` is a resizable `row`:
-    - `sidebar` column (56 px) holding `dock-docked`, which runs `c-studio-dock` with `props: {docked: true}`;
+    - `sidebar` column (hidden while folded) holding `dock-docked`, which runs `c-studio-dock` with `props: {docked: true}`;
     - `main` block with `tab: "active"` and a `pane` style plus a header mod;
     - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
-  - A floating `dock` on the left edge (`peek: 52`), which is the same mod unpinned.
+  - A floating `dock` copy that draws nothing and only handles ⌘B: Herdr paints a floating block's frame with the solid theme background, so it can't be glass.
+  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at ~35% (dark) / 45% (light) and a translucent `border`; tab tray and dock use a light `foreground` tint, hover and selection translucent tints. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
   - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).

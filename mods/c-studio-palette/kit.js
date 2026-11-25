@@ -5,7 +5,7 @@
 import { svg, image } from "gpui-kit";
 import { run, panes, layout, shared, setShared, home, spaces, openOverlay, hc, exec } from "herdr";
 
-export const SIDEBAR = { open: 296, peek: 56, min: 220, max: 520 };
+export const SIDEBAR = { open: 296, peek: 8, min: 220, max: 520 };
 
 // The dock's width when open: dragged by its edge, remembered across restarts.
 export function dockWidth() {
@@ -40,7 +40,9 @@ export function togglePanel(id) {
 
 export function pinDock(pinned) {
   setShared("dock.pinned", pinned);
-  run("layout.resize", { id: "sidebar", px: pinned ? dockWidth() : SIDEBAR.peek });
+  // Folded, the dock column hides so both window edges match.
+  run(pinned ? "layout.show" : "layout.hide", { id: "sidebar" });
+  if (pinned) run("layout.resize", { id: "sidebar", px: dockWidth() });
 }
 
 // A tab's label: its given name, else the agent session's title, else the

@@ -41,7 +41,7 @@ export default class StudioDock extends View {
   }
 
   apply(pinned) {
-    run("layout.resize", { id: "sidebar", px: pinned ? dockWidth() : SIDEBAR.peek });
+    pinDock(pinned);
   }
 
   // The edge between dock and terminals is draggable (Herdr's own resize):
@@ -49,7 +49,7 @@ export default class StudioDock extends View {
   // the folded strip it pins at that width.
   followEdge(pinned, cx) {
     const px = find(layout(), "sidebar")?.size?.px;
-    if (!px || px === this.edge) return;
+    if (!pinned || !px || px === this.edge) return;
     this.edge = px;
     // Settle once the drag stops: writing shared state every frame makes it stutter.
     const tok = this.edgeTok = (this.edgeTok ?? 0) + 1;
@@ -91,7 +91,7 @@ export default class StudioDock extends View {
 
   iconButton(t, id, glyph, action) {
     return div().id(id).size(22).flex_none().flex().items_center().justify_center().rounded(7)
-      .text_size(14).text_color(t.dim).hover((x) => x.bg(t.raised).text_color(t.foreground))
+      .text_size(14).text_color(t.dim).hover((x) => x.bg(t.foreground + "14").text_color(t.foreground))
       .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
       .on_click((_e, cx) => { cx.stop_propagation(); action(); })
       .child(glyph);
@@ -102,6 +102,8 @@ export default class StudioDock extends View {
     const pinned = shared("dock.pinned") === true;
     if (!this.docked) this.followEdge(pinned, cx);
     if (this.docked !== pinned) { this.wasShown = false; return div(); }
+    // Herdr paints a floating block's frame solid, so the folded dock shows nothing: spaces switch with ⌃1–9, ⌘K or ⌘B.
+    if (!this.docked) return div();
     if (this.docked && !this.wasShown) {
       this.wasShown = true;
       this.faded = true;
@@ -125,7 +127,7 @@ export default class StudioDock extends View {
         .when(this.picking === s.id, (el) => el.on_mouse_down_out((_e, cx) => { this.picking = null; cx.notify(); }))
         .child(
           h_flex().id(`dock-row-${s.id}`).relative().h(46).px(8).gap(10).items_center().rounded(12)
-            .hover((x) => x.bg(t.hover))
+            .hover((x) => x.bg(t.foreground + "14"))
             // A dock tab dropped on another space moves there.
             .when(Boolean(this.drag && this.drag.space !== s.id && hovered), (el) => el.bg(color + "33"))
             .on_mouse_up("left", (_e, cx) => {
@@ -144,7 +146,7 @@ export default class StudioDock extends View {
                 .text_color(color)
                 .text_size(14).font_semibold().child(initial(s.name)))
               .when(Boolean(s.status) && s.status !== "idle", (el) => el.child(
-                div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover)
+                div().absolute().top(-2).right(-2).size(10).rounded(5).bg(t[s.status] ?? t.dim).border(2).border_color(t.popover.slice(0, 7))
                   .when(s.status === "working" || s.status === "blocked", (d) => d.loop("opacity", { from: 0.35, to: 1, period: s.status === "blocked" ? 1400 : 1800 })))))
             .child(v_flex().flex_1().min_w(0).gap(1)
               .child(div().truncate().text_size(14.5).font_medium().when(s.active, (d) => d.font_semibold()).text_color(s.active ? t.foreground : t.muted).child(s.name))
@@ -173,7 +175,7 @@ export default class StudioDock extends View {
             .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); setSpaceColor(s.id, k); this.picking = null; cx.notify(); })))
           .child(div().w(1).h(16).bg(t.border))
           .child(div().id(`dock-rename-${s.id}`).px(6).py(2).rounded(6).text_size(12.5).text_color(t.muted).cursor_pointer()
-            .hover((d) => d.bg(t.hover).text_color(t.foreground))
+            .hover((d) => d.bg(t.foreground + "14").text_color(t.foreground))
             .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); this.picking = null; run("space.rename", { id: s.id }); })
             .child("Rename…"))))
         .when(open && !folded && s.tabs.length > 0, (el) => el.children(s.tabs.map((c) => {
@@ -184,9 +186,9 @@ export default class StudioDock extends View {
           const over = this.hoverTab === c.id;
           const dropHere = this.drag && this.drag.space === s.id && this.drag.tab !== c.id && over;
           return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
-            .relative().hover((x) => x.bg(t.hover))
+            .relative().hover((x) => x.bg(t.foreground + "14"))
             .when(focused, (el) => el.bg(color + "1F").font_semibold())
-            .when(dropHere, (el) => el.bg(t.hover))
+            .when(dropHere, (el) => el.bg(t.foreground + "14"))
             .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
             .on_mouse_down("left", (e) => {
               this.drag = { space: s.id, tab: c.id };
@@ -208,13 +210,13 @@ export default class StudioDock extends View {
 
     const footerButton = (id, glyph, label, action) =>
       h_flex().id(id).flex_none().h(36).px(8).gap(10).items_center().rounded(10).text_color(t.dim)
-        .hover((x) => x.bg(t.hover).text_color(t.foreground)).on_click(action)
+        .hover((x) => x.bg(t.foreground + "14").text_color(t.foreground)).on_click(action)
         .child(div().w(30).flex_none().flex().justify_center().text_size(15).child(glyph))
         .child(div().text_size(13.5).truncate().child(label));
 
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(t.popover).rounded(16).border(1).border_color(t.border))
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(t.canvas.slice(0, 7) + "3b").rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.dim)))

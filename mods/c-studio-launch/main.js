@@ -128,7 +128,7 @@ export default class StudioLaunch extends View {
       .items_center()
       .justify_center()
       .gap(26)
-      .bg(t.background)
+      .bg(t.background.slice(0, 7))
       .track_focus(this.handle)
       .on_mouse_down("left", () => this.handle.focus())
       .on_key_down((e, cx) => {

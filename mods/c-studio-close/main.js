@@ -50,7 +50,7 @@ export default class CloseTab extends View {
       .hover((s) => s.opacity(0.85))
       .on_click(action)
       .child(label);
-    return v_flex().id("close-tab").size_full().p(20).gap(8).bg(t.popover).track_focus(this.handle)
+    return v_flex().id("close-tab").size_full().p(20).gap(8).bg(t.popover.slice(0, 7) + "eb").track_focus(this.handle)
       .on_key_down((e, cx) => {
         if (e.key === "escape") this.done();
         else if (e.key === "enter") this.park(tab);

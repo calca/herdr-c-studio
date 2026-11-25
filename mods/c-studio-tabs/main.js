@@ -13,8 +13,8 @@ const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧
 // A round button in the tray's style: same height, border and fill.
 function round(t, id) {
   return div().id(id).size(38).flex().flex_none().items_center().justify_center().rounded(19)
-    .bg(t.background).border(1).border_color(t.border).text_color(t.muted).cursor_pointer()
-    .hover(s => s.bg(t.hover).text_color(t.foreground));
+    .bg(t.foreground + "0f").text_color(t.muted).cursor_pointer()
+    .hover(s => s.bg(t.foreground + "14").text_color(t.foreground));
 }
 
 export default class Tabs extends View {
@@ -88,7 +88,7 @@ export default class Tabs extends View {
     return PANELS.map(([id, label, tip]) => {
       const on = shownPanel === id;
       return round(t, `panel-${id}`).tooltip(tip).text_size(12.5).font_medium()
-        .bg(on ? t.selected : t.background).text_color(on ? t.foreground : t.muted)
+        .bg(on ? t.foreground + "1f" : t.background).text_color(on ? t.foreground : t.muted)
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
         .on_click(() => togglePanel(id)).child(label);
     });
@@ -134,7 +134,7 @@ export default class Tabs extends View {
       if (active >= 0) this.scroll.scroll_to_item(active);
     }
     const stop = (_e, cx) => cx.stop_propagation();
-    const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
+    const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.foreground + "14").text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const all = panes();
     const tint = space ? spaceColor(t, space) + "1F" : t.selected;
@@ -149,7 +149,7 @@ export default class Tabs extends View {
           cx.notify();
         })
         .relative().text_color(c.active ? t.foreground : t.muted)
-        .hover(s => s.bg(t.hover))
+        .hover(s => s.bg(t.foreground + "14"))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
         .on_mouse_up("left", () => {
           const from = this.pressed; this.pressed = null;
@@ -181,7 +181,7 @@ export default class Tabs extends View {
     const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 3, -3);
     const overflow = more > 0 || content > (this.view ?? Infinity) + 1;
     // Tabs sit centered in one rounded tray; the panel toggles keep to the right.
-    return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center().bg(t.canvas)
+    return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center()
       .on_size_change((size, cx) => {
         this.autoDock(size);
         this.autoPanel(size);
@@ -189,9 +189,11 @@ export default class Tabs extends View {
       })
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
-      .child(div().flex_1().min_w(0))
+      .child(h_flex().flex_1().min_w(0).items_center()
+        .child(round(t, "dock-open").on_mouse_down("left", stop).on_click(() => pinDock(true))
+          .child(svg("mods/workspace-chrome/layers.svg").size(15))))
       .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).p(3).gap(3).items_center().rounded(19)
-        .bg(t.background).border(1).border_color(t.border)
+        .bg(t.foreground + "0f")
         .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
           .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
           .children(shown.map(item))))

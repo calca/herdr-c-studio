@@ -33,6 +33,10 @@
     "popover": "#2b2b29",
     "foreground": "#f0efea",
     "muted": "#a9a69c",
-    "dim": "#7c7a73"
+    "dim": "#7c7a73",
+    "canvas": "#1f1e1d59",
+    "background": "#26262400",
+    "surface": "#262624",
+    "border": "#f0efea1f"
   }
 }
