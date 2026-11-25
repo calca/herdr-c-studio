@@ -19,7 +19,7 @@ Top to bottom:
 - **Body row** (10 px padding, 10 px gap):
   - **Sidebar (56–520 px).**
     - The spaces dock, one row per space: a color square with the initial, the name, and the space's tabs beneath it. Each tab row has a monochrome program icon, a name, a status dot or spinner, and an "ago" time.
-    - When the dock is not pinned, it hides completely and the window edges match. A round layers button at the left of the tab bar pins it again; spaces also switch with ⌃1–9 and ⌘K.
+    - When the dock is not pinned, it hides completely and the window edges match. A round layers toggle at the left of the tab bar (always there, in the space color while the dock is open) shows or hides it; spaces also switch with ⌃1–9 and ⌘K.
   - **Main.** The active tab's panes:
     - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome. `veil: 0.35` fades the panes you are not in.
     - Each pane has a 36 px header (`c-studio-pane`) showing:
@@ -86,7 +86,7 @@ Themes:
     - `main` block with `tab: "active"` and a `pane` style plus a header mod;
     - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
   - A floating `dock` copy that draws nothing and only handles ⌘B: Herdr paints a floating block's frame with the solid theme background, so it can't be glass.
-  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 45% and a translucent `border`; tab tray and dock use `glass(t)` from `kit.js`, the canvas tint at an alpha that brings the total cover to 60% whatever the canvas alpha; hover and selection are translucent tints. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
+  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 55% and a translucent `border`; the dock uses `glass(t)` from `kit.js` (the canvas tint at an alpha that brings the total cover to 65% whatever the canvas alpha). Tabs and the round header buttons (dock toggle, ⌄, +, F, C) share one look: 60% glass, 65% under the pointer, and when selected 65% mixed with the space color. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
   - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).

@@ -221,8 +221,7 @@ export default class StudioDock extends View {
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))
           .child(div().flex_1().text_size(11).font_semibold().text_color(t.muted).child("SPACES"))
-          .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`)))
-          .child(this.iconButton(t, "dock-pin", pinned ? "◧" : "◨", () => this.setPinned(!pinned))))
+          .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`))))
       // Only the spaces scroll; the head and "New space" stay in view.
       .child(v_flex().id("dock-list").gap(6).when(this.docked, (el) => el.flex_1().min_h(0).overflow_y_scroll())
         .children(all.map((s, i) => row(s, i).flex_none())))

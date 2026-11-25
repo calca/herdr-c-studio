@@ -10,11 +10,21 @@ const SWIPE = 80;
 const MAX_TABS = 4;
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
 
-// A round button in the tray's style: same height, border and fill.
-function round(t, id) {
+// The selected look: 65% glass mixed with a little of the space color.
+function selectedBg(t) {
+  const space = spaces().find(p => p.active);
+  const g = glass(t, 0.65);
+  if (!space) return g;
+  const c = spaceColor(t, space);
+  const mix = (i) => Math.round(parseInt(g.slice(i, i + 2), 16) * 0.82 + parseInt(c.slice(i, i + 2), 16) * 0.18).toString(16).padStart(2, "0");
+  return "#" + mix(1) + mix(3) + mix(5) + g.slice(7, 9);
+}
+
+// A round button that behaves like a tab: 60% glass, 65% under the pointer, tinted when on.
+function round(t, id, on = false) {
   return div().id(id).size(38).flex().flex_none().items_center().justify_center().rounded(19)
-    .bg(glass(t)).text_color(t.muted).cursor_pointer()
-    .hover(s => s.bg(t.foreground + "14").text_color(t.foreground));
+    .bg(on ? selectedBg(t) : glass(t, 0.6)).text_color(on ? t.foreground : t.muted).cursor_pointer()
+    .when(!on, el => el.hover(s => s.bg(glass(t, 0.65)).text_color(t.foreground)));
 }
 
 export default class Tabs extends View {
@@ -87,8 +97,7 @@ export default class Tabs extends View {
     const shownPanel = panelShown();
     return PANELS.map(([id, label, tip]) => {
       const on = shownPanel === id;
-      return round(t, `panel-${id}`).tooltip(tip).text_size(12.5).font_medium()
-        .bg(on ? t.foreground + "1f" : t.background).text_color(on ? t.foreground : t.muted)
+      return round(t, `panel-${id}`, on).tooltip(tip).text_size(12.5).font_medium()
         .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
         .on_click(() => togglePanel(id)).child(label);
     });
@@ -113,12 +122,25 @@ export default class Tabs extends View {
     pinDock(wide);
   }
 
+  // Shows or hides the spaces dock (⌘B); on, the icon takes the space color.
+  dockToggle(t, pinned) {
+    const space = spaces().find(p => p.active);
+    return round(t, "dock-toggle", pinned).when(pinned && Boolean(space), el => el.text_color(spaceColor(t, space)))
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation()).on_click(() => pinDock(!pinned))
+      .child(svg("mods/workspace-chrome/layers.svg").size(15));
+  }
+
   render() {
     const t = theme();
     const space = spaces().find(p => p.active);
     this.syncPanel(space, PANELS.map(([id]) => id));
-    if (shared("dock.pinned") === true) return h_flex().id("c-studio-tabs-pinned").size_full().pt(10).pr(16).gap(4).items_center().justify_end()
+    const w = window();
+    // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
+    const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
+    if (shared("dock.pinned") === true) return h_flex().id("c-studio-tabs-pinned").size_full().pt(10).pr(16).pl(lightsPadding).gap(4).items_center()
       .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
+      .child(this.dockToggle(t, true))
+      .child(div().flex_1())
       .children(this.pills(t));
     // At most MAX_TABS in the tray, the active one always among them; the rest are in ⌄.
     const tabs = space?.tabs ?? [];
@@ -137,11 +159,10 @@ export default class Tabs extends View {
     const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.foreground + "14").text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const all = panes();
-    const tint = space ? spaceColor(t, space) + "1F" : t.selected;
     const hidden = (c) => all.filter(p => p.tab === c.id).length - 1;
     const item = (c, i) => {
       const { name, program } = tabName(c, all);
-      return h_flex().id(`tab-${c.id}`).h(30).px(13).gap(7).rounded(15).items_center().flex_none().text_size(14)
+      return h_flex().id(`tab-${c.id}`).h(38).px(14).gap(7).rounded(19).items_center().flex_none().text_size(14)
         // A rename or status dot on this or an earlier tab can push the active one out.
         .on_size_change((size, cx) => {
           this.widths[c.id] = size.width;
@@ -149,7 +170,7 @@ export default class Tabs extends View {
           cx.notify();
         })
         .relative().text_color(c.active ? t.foreground : t.muted)
-        .hover(s => s.bg(t.foreground + "14"))
+        .bg(glass(t, 0.6)).hover(s => s.bg(glass(t, 0.65)))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
         .on_mouse_up("left", () => {
           const from = this.pressed; this.pressed = null;
@@ -170,15 +191,12 @@ export default class Tabs extends View {
           .on_mouse_down("left", stop)
           .on_click((_e, cx) => { cx.stop_propagation(); const z = all.find(p => p.tab === c.id && p.zoomed); if (z) run("pane.zoom", { pane: z.pane }); })
           .child(svg("mods/c-studio-pane/unzoom.svg").size(11)).child(`${hidden(c)}`)))
-        .when(c.active, el => el.bg(tint).font_semibold())
+        .when(c.active, el => el.bg(selectedBg(t)).font_semibold())
         .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); closeTab(c.id); }).child(svg("mods/pane/close.svg").size(13))));
     };
-    const w = window();
-    // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
-    const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
     const compact = (this.size?.width ?? 1200) < 900;
     const widths = this.widths ?? (this.widths = {});
-    const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 3, -3);
+    const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 4, -4);
     const overflow = more > 0 || content > (this.view ?? Infinity) + 1;
     // Tabs sit centered in one rounded tray; the panel toggles keep to the right.
     return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center()
@@ -190,18 +208,16 @@ export default class Tabs extends View {
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
       .child(h_flex().flex_1().min_w(0).items_center()
-        .child(round(t, "dock-open").on_mouse_down("left", stop).on_click(() => pinDock(true))
-          .child(svg("mods/workspace-chrome/layers.svg").size(15))))
-      .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).p(3).gap(3).items_center().rounded(19)
-        .bg(glass(t))
-        .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().track_scroll(this.scroll)
+        .child(this.dockToggle(t, false)))
+      .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).gap(4).items_center().rounded(19)
+        .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(4).overflow_x_scrollbar().track_scroll(this.scroll)
           .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })
           .children(shown.map(item))))
       .when(overflow, el => el.child(round(t, "tab-more").relative().on_mouse_down("left", stop)
         .on_click(() => { setShared("c-studio-palette.space", space?.id ?? null); run("mod.open", { name: "c-studio-palette" }); })
         .child(svg("mods/workspace-chrome/chevron-down.svg").size(14))
         .when(more > 0, b => b.child(div().absolute().top(-3).right(-3).min_w(16).h(16).px(4).flex().items_center().justify_center()
-          .rounded(8).bg(t.foreground + "33").text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
+          .rounded(8).bg(glass(t, 0.8)).text_size(10).font_semibold().text_color(t.foreground).child(`${more}`)))))
       .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
       .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
