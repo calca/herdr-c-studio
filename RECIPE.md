@@ -68,6 +68,7 @@ Themes:
   - A Spotlight-style popup with fuzzy search over tabs, spaces, agents, actions and parked terminals, recent items first.
   - ⌘R renames and ⌘⌫ closes the selected item; ↵ on a parked terminal resumes it as a tab.
   - "Move tab to …" moves the focused tab to another space.
+  - With an empty query, tabs are sorted by Status (needs you, done, working, the rest), Recent (the ctrl+tab order, the current tab last) or A–Z. Switch with a click or tab / shift+tab; the choice is kept in `c-studio-palette.sort`.
 - **Switcher (⌃Tab / ⌃⇧Tab, `c-studio-switch`):**
   - Like ⌘Tab for apps: recent tabs across all spaces, newest first, with status, program icon and space.
   - Tab / ⇧Tab (or ↑ / ↓) step while ⌃ is held; releasing ⌃ selects, Esc cancels. The list fades in after 140 ms, so a quick ⌃Tab just flips back.
@@ -110,7 +111,7 @@ Themes:
   - `app.*`: theme, palette, settings.
 - **Shared keys:**
   - `dock.pinned`, `dock.width`, `dock.folded`, `space.colors`;
-  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio.recent`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
+  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-palette.sort`, `c-studio.recent`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
 - **Programs run:**
   - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
   - `hc get/label/keep`, to move a tab's terminal to another space.

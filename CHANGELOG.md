@@ -14,7 +14,7 @@ First public release.
 - **Arrow navigation** – ⌃⌘←/→ for the previous / next tab, ⌃⌘↑/↓ for the previous / next space; no [ ] keys, so they work on Italian and other layouts.
 - **Focus veil** – panes you are not in fade a little.
 - **⌃Tab switcher** – hold ⌃ and press Tab to walk your recent tabs across all spaces, release to go there; a quick ⌃Tab flips back.
-- **Palette** – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions; rename, close, move tabs between spaces, resume parked terminals.
+- **Palette** – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions; rename, close, move tabs between spaces, resume parked terminals; sort tabs by status, recent use or name.
 - **Launcher** – new tab with a terminal or an installed agent, in a recent folder (⌥1–5) or a new worktree.
 - **Close dialog** – park a running agent instead of closing it.
 - **Update notice** – the status bar tells you when a new C-Studio release is out; one click shows what's new and installs it.

@@ -8,6 +8,8 @@ const ROW_H = 44;
 const RECENT = "c-studio-palette.recent";
 const RECENT_MAX = 6;
 const SCOPE = "c-studio-palette.space";
+const SORT = "c-studio-palette.sort";
+const SORTS = [["status", "Status"], ["recent", "Recent"], ["az", "A–Z"]];
 
 // Higher is better, 0 = no match. Whole substring beats word initials ("cc"
 // finds Claude Code), which beat letters in order ("clcd").
@@ -86,7 +88,14 @@ export default class StudioPalette extends View {
       go: () => run("tab.select", { id: c.id }),
     }));
     const rank = { blocked: 0, done: 1, working: 2 };
-    if (!this.scope) tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
+    const sort = this.sort();
+    // Recent follows the ctrl+tab order, minus the tab you're already on.
+    const mru = (shared("c-studio.recent") ?? []).filter((id) => !tabs.some((x) => x.id === id && x.here));
+    const age = (x) => { const n = mru.indexOf(x.id); return n < 0 ? Infinity : n; };
+    const az = (a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base", numeric: true });
+    if (!this.scope && sort === "status") tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
+    if (!this.scope && sort === "recent") tabs.sort((a, b) => (a.here ? 1 : 0) - (b.here ? 1 : 0) || age(a) - age(b));
+    if (!this.scope && sort === "az") tabs.sort(az);
     const spaceItems = spaces().map((w) => ({
       kind: "action", key: `space:${w.id}`, label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
     }));
@@ -95,6 +104,7 @@ export default class StudioPalette extends View {
     const moveItems = f?.tab ? spaces().filter((w) => w.id !== here?.id && (w.machine ?? null) === (here?.machine ?? null)).map((w) => ({
       kind: "action", key: `move:${w.id}`, label: `Move tab to ${w.name}`, sub: "Space", icon: "→", go: () => setShared("c-studio.move", { tab: f.tab, space: w.id }),
     })) : [];
+    if (sort === "az") spaceItems.sort(az);
     // Parked: still running, but Herdr took its pane and its space/tab labels away.
     const shown = new Set(all.map((p) => p.terminal));
     const parked = terminals().filter((x) => x.state === "live" && !x.parent && x.labels && "herdr.seen" in x.labels
@@ -130,6 +140,17 @@ export default class StudioPalette extends View {
       .filter(Boolean)
       .sort((a, b) => b.total - a.total || a.n - b.n)
       .map((x) => x.i);
+  }
+
+  sort() {
+    const s = shared(SORT);
+    return SORTS.some(([k]) => k === s) ? s : "status";
+  }
+
+  cycleSort(step) {
+    const n = SORTS.findIndex(([k]) => k === this.sort());
+    setShared(SORT, SORTS[(n + step + SORTS.length) % SORTS.length][0]);
+    this.at = 0; this.top = 0;
   }
 
   remember(item) {
@@ -197,7 +218,8 @@ export default class StudioPalette extends View {
           this.input.set_selected_range({ start: 0, end: sel.label.length });
           return cx.notify();
         }
-        if (k === "down") this.at = (this.at + 1) % Math.max(1, items.length);
+        if (k === "tab" && !this.scope && !this.filter) this.cycleSort(e.modifiers.shift ? -1 : 1);
+        else if (k === "down") this.at = (this.at + 1) % Math.max(1, items.length);
         else if (k === "up") this.at = (this.at + items.length - 1) % Math.max(1, items.length);
         else return;
         cx.stop_propagation();
@@ -207,7 +229,14 @@ export default class StudioPalette extends View {
         .child(this.renaming
           ? div().flex_none().text_size(13).text_color(t.dim).child("Rename")
           : svg("mods/workspace-chrome/search.svg").size(18).text_color(t.dim))
-        .child(Input.new(this.input).flex_1().h_full().text_size(17).text_color(t.foreground)))
+        .child(Input.new(this.input).flex_1().h_full().text_size(17).text_color(t.foreground))
+        .when(!this.scope && !this.renaming && !this.filter, (el) => el.child(h_flex().flex_none().p(2).gap(2).rounded(8).bg(t.foreground + "0d")
+          .children(SORTS.map(([k, label]) => div().id(`sp-sort-${k}`).px(8).py(2).rounded(6).cursor_pointer().text_size(11.5)
+            .text_color(this.sort() === k ? t.foreground : t.dim)
+            .when(this.sort() === k, (d) => d.bg(t.foreground + "1a").font_medium())
+            .when(this.sort() !== k, (d) => d.hover((h) => h.text_color(t.muted)))
+            .on_click((_e, cx) => { setShared(SORT, k); this.at = 0; this.top = 0; cx.notify(); })
+            .child(label))))))
       .child(this.renaming
         ? div().h(ROW_H).px(18).items_center().flex().text_size(12).text_color(t.dim).child("↵ save · esc back")
         : items.length
