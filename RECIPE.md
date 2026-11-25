@@ -19,7 +19,7 @@ Top to bottom:
 - **Body row** (10 px padding, 10 px gap):
   - **Sidebar (56–520 px).**
     - The spaces dock, one row per space: a color square with the initial, the name, and the space's tabs beneath it. Each tab row has a monochrome program icon, a name, a status dot or spinner, and an "ago" time.
-    - When the dock is not pinned, it hides completely and the window edges match. A round layers toggle at the left of the tab bar (always there, in the space color while the dock is open) shows or hides it; spaces also switch with ⌃1–9 and ⌘K.
+    - When the dock is not pinned, it hides completely and the window edges match. A round layers toggle at the left of the tab bar (always there, in the space color while the dock is open) shows or hides it; spaces also switch with ⌃1–9, ⌃⌘↑/↓ and ⌘K; tabs with ⌃⌘←/→.
   - **Main.** The active tab's panes:
     - The pane background is `background`, with a 1 px `border` and a 1 px `accent` border on focus. Radius 14, 10 px gap; a lone pane keeps its chrome. `veil: 0.35` fades the panes you are not in.
     - Each pane has a 36 px header (`c-studio-pane`) showing:

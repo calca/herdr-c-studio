@@ -11,6 +11,10 @@
     "cmd-shift-left": "pane.resize:left",
     "cmd-shift-right": "pane.resize:right",
     "cmd-shift-up": "pane.resize:up",
-    "cmd-shift-down": "pane.resize:down"
+    "cmd-shift-down": "pane.resize:down",
+    "ctrl-cmd-left": "tab.prev",
+    "ctrl-cmd-right": "tab.next",
+    "ctrl-cmd-up": "space.prev",
+    "ctrl-cmd-down": "space.next"
   }
 }

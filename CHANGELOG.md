@@ -11,6 +11,7 @@ First public release.
 - **Agent status** – working, done and needs you in the dock, the tabs and the status bar; ⌘J jumps to the next agent that needs you.
 - **⌘-click links** – code files open in VS Code at the clicked line, images and PDFs in Quick Look.
 - **Pane resize** – ⌘⇧ + arrows.
+- **Arrow navigation** – ⌃⌘←/→ for the previous / next tab, ⌃⌘↑/↓ for the previous / next space; no [ ] keys, so they work on Italian and other layouts.
 - **Focus veil** – panes you are not in fade a little.
 - **Palette** – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions; rename, close, move tabs between spaces, resume parked terminals.
 - **Launcher** – new tab with a terminal or an installed agent, in a recent folder (⌥1–5) or a new worktree.
