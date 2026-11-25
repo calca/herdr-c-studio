@@ -216,7 +216,7 @@ export default class Tabs extends View {
       .when(overflow, el => el.child(round(t, "tab-more").relative().on_mouse_down("left", stop)
         .on_click(() => { setShared("c-studio-palette.space", space?.id ?? null); run("mod.open", { name: "c-studio-palette" }); })
         // The hidden count sits inside the button: a translucent badge over it would show a crescent.
-        .when(more > 0, b => b.w(54).gap(3).child(div().text_size(12.5).font_semibold().text_color(t.foreground).child(`${more}`)))
+        .when(more > 0, b => b.w(54).gap(3).child(div().text_size(12.5).child(`${more}`)))
         .child(svg("mods/workspace-chrome/chevron-down.svg").size(more > 0 ? 12 : 14))))
       .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
       .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
