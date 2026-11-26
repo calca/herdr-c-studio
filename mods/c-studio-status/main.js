@@ -180,12 +180,14 @@ export default class WorkspaceStatus extends View {
     const count = (st) => list.filter(a => a.status === st).length;
     const working = count("working"), needs = count("blocked");
     const idle = list.length - working - needs;
+    // On the glass the theme's muted grey sinks into the desktop: a softened foreground reads better.
+    const soft = t.foreground + "c0";
     const click = (el, id, action) => el.id(id).h(24).px(8).rounded(7).cursor_pointer()
       .hover((s) => s.bg(t.hover)).on_click((_e, cx) => action(cx));
     const label = (icon, text) => h_flex().gap(6).items_center().child(svg(`mods/workspace-chrome/${icon}.svg`).size(13)).child(text);
     const pill = (id, color, text, match) => click(h_flex().gap(6).items_center(), id, () => this.goTo(match))
       .child(div().size(6).rounded(3).bg(color)).child(div().text_color(color).child(text));
-    return h_flex().size_full().px(8).gap(6).items_center().text_size(12.5).text_color(t.muted)
+    return h_flex().size_full().px(8).gap(6).items_center().text_size(12.5).text_color(soft)
       .child(space?.machine
         ? div().px(8).child(label("server", space.machine))
         : div().id("status-machine").h(24).px(8).flex().items_center().tooltip("This computer").child(svg("mods/workspace-chrome/monitor.svg").size(13)))
@@ -195,7 +197,7 @@ export default class WorkspaceStatus extends View {
         .when(this.diff.plus > 0 || this.diff.minus > 0, (d) => d
           .child(div().text_color(t.ansi2 ?? t.done).child(`+${this.diff.plus}`))
           .child(div().text_color(t.ansi1 ?? t.blocked).child(`−${this.diff.minus}`)))
-        .when(this.diff.fresh > 0, (d) => d.child(div().text_color(t.dim).child(`${this.diff.fresh} new`)))))
+        .when(this.diff.fresh > 0, (d) => d.child(div().text_color(soft).child(`${this.diff.fresh} new`)))))
       .when(Boolean(this.diff?.ahead || this.diff?.behind), el => el.child(click(h_flex().gap(5).items_center(), "status-sync", (cx) => this.sync(cx))
         .tooltip(this.diff.behind > 0 ? "Pull (fast-forward)" : "Push")
         .when(this.syncing, (d) => d.child(svg("mods/workspace-chrome/spinner.svg").size(12).spin(900)))
@@ -207,9 +209,9 @@ export default class WorkspaceStatus extends View {
         .child(div().size(6).rounded(3).bg(t.accent)).child(div().text_color(t.accent).child(`C-Studio ${update.latest}`))))
       .when(working > 0, el => el.child(pill("status-working", t.working, `${working} working`, (a) => a.status === "working")))
       .when(needs > 0, el => el.child(pill("status-needs", t.blocked, `${needs} needs you`, (a) => a.status === "blocked")))
-      .when(idle > 0 || list.length === 0, el => el.child(pill("status-idle", t.dim, list.length === 0 ? "no agents" : `${idle} idle`,
+      .when(idle > 0 || list.length === 0, el => el.child(pill("status-idle", soft, list.length === 0 ? "no agents" : `${idle} idle`,
         (a) => a.status !== "working" && a.status !== "blocked")))
       .child(click(div(), "status-palette", () => run("mod.open", { name: "c-studio-palette" }))
-        .flex().items_center().text_color(t.dim).child(this.hint(t)));
+        .flex().items_center().text_color(soft).child(this.hint(t)));
   }
 }
