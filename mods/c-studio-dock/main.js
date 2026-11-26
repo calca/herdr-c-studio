@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys, layout, openOverlay } from "herdr";
-import { glass, SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon, isPinned } from "./kit.js";
+import { glass, SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon, isPinned, reorderTab } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -240,7 +240,8 @@ export default class StudioDock extends View {
             // Drop on another tab of the same space: take its place.
             .on_mouse_up("left", () => {
               const d = this.drag; this.drag = null;
-              if (d && d.space === s.id && d.tab !== c.id) run("tab.move", { id: d.tab, index: s.tabs.findIndex((x) => x.id === c.id) + 1 });
+              if (!d || d.space !== s.id || d.tab === c.id) return;
+              reorderTab(d.tab, s.tabs.findIndex((x) => x.id === c.id) + 1);
             })
             .child(slot(Boolean(dropHere && above), true))
             .child(row)

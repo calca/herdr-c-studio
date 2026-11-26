@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand, agents } from "herdr";
-import { glass, find, panelShown, showPanel, togglePanel, publishViewport, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon, isPinned, togglePin, keepPinnedFirst } from "./kit.js";
+import { glass, find, panelShown, showPanel, togglePanel, publishViewport, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon, isPinned, togglePin, keepPinnedFirst, reorderTab } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -214,7 +214,7 @@ export default class Tabs extends View {
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
         .on_mouse_up("left", () => {
           const from = this.pressed; this.pressed = null;
-          if (from !== null && from !== i) run("tab.move", { id: shown[from].id, index: space.tabs.findIndex(x => x.id === c.id) + 1 });
+          if (from !== null && from !== i) reorderTab(shown[from].id, space.tabs.findIndex(x => x.id === c.id) + 1);
           else run("tab.select", { id: c.id });
         })
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "c-studio-menu", kind: "popup", width: 200, props: { target: { id: c.id, space: space.id } } }); })

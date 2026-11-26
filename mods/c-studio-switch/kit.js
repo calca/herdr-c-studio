@@ -167,6 +167,15 @@ export function keepSpace(tabId) {
 }
 
 // A plain shell closes at once; a running program or agent asks: park (keeps running) or close.
+// Herdr 0.1.18 ignores tab.move's id and moves the active tab: select it first,
+// then give the focus back to the tab that had it.
+export function reorderTab(id, index) {
+  const focused = spaces().find((s) => s.active)?.tabs.find((c) => c.active)?.id;
+  if (focused !== id) run("tab.select", { id });
+  run("tab.move", { index });
+  if (focused && focused !== id) run("tab.select", { id: focused });
+}
+
 // Pinned tabs lead their space (moved there for real, so ⌘1–9 and prev/next
 // agree), show as an icon in the tab bar and ask before closing.
 const PINNED = "c-studio.pinned";
@@ -181,7 +190,7 @@ export function togglePin(id) {
   const list = (shared(PINNED) ?? []).filter((x) => alive.has(x) && x !== id);
   const on = !isPinned(id);
   setShared(PINNED, on ? [...list, id] : list);
-  run("tab.move", { id, index: space.tabs.filter((c) => c.id !== id && list.includes(c.id)).length + 1 });
+  reorderTab(id, space.tabs.filter((c) => c.id !== id && list.includes(c.id)).length + 1);
 }
 
 // A drag or a move can leave a pinned tab behind an unpinned one: one step back per call.
@@ -190,7 +199,7 @@ export function keepPinnedFirst() {
   if (!list.length) return;
   for (const s of spaces()) {
     const at = s.tabs.findIndex((c, i) => list.includes(c.id) && s.tabs.slice(0, i).some((x) => !list.includes(x.id)));
-    if (at >= 0) return run("tab.move", { id: s.tabs[at].id, index: s.tabs.slice(0, at).filter((x) => list.includes(x.id)).length + 1 });
+    if (at >= 0) return reorderTab(s.tabs[at].id, s.tabs.slice(0, at).filter((x) => list.includes(x.id)).length + 1);
   }
 }
 
