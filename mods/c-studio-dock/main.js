@@ -110,6 +110,8 @@ export default class StudioDock extends View {
       cx.timer.after(30, (c) => { this.faded = false; c.notify(); });
     }
     const open = this.docked || (placement()?.hovered ?? false);
+    // A tab press becomes a move once the pointer leaves that tab.
+    const moving = Boolean(this.drag && this.hoverTab !== this.drag.tab);
     if (!open) this.picking = null;
     const list = agents();
     const all = spaces();
@@ -129,7 +131,8 @@ export default class StudioDock extends View {
           h_flex().id(`dock-row-${s.id}`).relative().h(46).px(8).gap(10).items_center().rounded(12)
             .hover((x) => x.bg(t.foreground + "14"))
             // A dock tab dropped on another space moves there.
-            .when(Boolean(this.drag && this.drag.space !== s.id && hovered), (el) => el.bg(color + "33"))
+            .when(Boolean(moving && this.drag.space !== s.id && hovered), (el) => el.bg(color + "33")
+              .child(div().absolute().right(10).px(8).h(20).flex().items_center().rounded(10).bg(color).text_size(11.5).font_semibold().text_color(t.background.slice(0, 7)).child("Sposta qui")))
             .on_mouse_up("left", (_e, cx) => {
               const d = this.drag; this.drag = null;
               if (d && d.space !== s.id) cx.spawn(async (c) => { await moveTab(d.tab, s.id); c.notify(); });
@@ -184,29 +187,41 @@ export default class StudioDock extends View {
           const since = c.status === "working" ? c.working_since : c.changed_at;
           const focused = s.active && c.active;
           const over = this.hoverTab === c.id;
-          const dropHere = this.drag && this.drag.space === s.id && this.drag.tab !== c.id && over;
-          return h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
+          const dropHere = moving && this.drag.space === s.id && this.drag.tab !== c.id && over;
+          // Where the dragged tab will land: above this one when it comes from below.
+          const above = dropHere && s.tabs.findIndex((x) => x.id === c.id) < s.tabs.findIndex((x) => x.id === this.drag.tab);
+          const lifted = moving && this.drag.tab === c.id;
+          const row = h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
             .relative().hover((x) => x.bg(t.foreground + "14"))
             .when(focused, (el) => el.bg(t.foreground + "1a").font_semibold())
-            .when(dropHere, (el) => el.bg(t.foreground + "14"))
-            .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
+            .when(lifted, (el) => el.opacity(0.4))
             .on_mouse_down("left", (e) => {
               this.drag = { space: s.id, tab: c.id };
               run("space.select", { id: s.id });
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });
             })
             .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "c-studio-menu", kind: "popup", width: 200, props: { target: { id: c.id, space: s.id } } }); })
-            // Drop on another tab of the same space: take its place.
-            .on_mouse_up("left", () => {
-              const d = this.drag; this.drag = null;
-              if (d && d.space === s.id && d.tab !== c.id) run("tab.move", { id: d.tab, index: s.tabs.findIndex((x) => x.id === c.id) + 1 });
-            })
             .child(this.dot(t, c.status, 6))
             .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, focused ? t.foreground : t.muted)))
             .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
             .when(isPinned(c.id) && !(over && !this.drag), (el) => el.child(svg("mods/workspace-chrome/pin.svg").size(12).flex_none().text_color(t.dim)))
             .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => closeTab(c.id))))
             .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
+          // An empty slot opens where the dragged tab will land; the hover area includes it,
+          // so the row moving down under the pointer doesn't lose the drop.
+          const slot = (on, top) => div().h(on ? 42 : 0).flex_none().overflow_hidden()
+            .transition("height", { duration: 200, easing: "ease-out" })
+            .child(div().h(38).ml(16).mr(4).when(!top, (d) => d.mt(4)).rounded(8).bg(color + "26"));
+          return v_flex().id(`dock-tab-${c.id}`)
+            .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
+            // Drop on another tab of the same space: take its place.
+            .on_mouse_up("left", () => {
+              const d = this.drag; this.drag = null;
+              if (d && d.space === s.id && d.tab !== c.id) run("tab.move", { id: d.tab, index: s.tabs.findIndex((x) => x.id === c.id) + 1 });
+            })
+            .child(slot(Boolean(dropHere && above), true))
+            .child(row)
+            .child(slot(Boolean(dropHere && !above), false));
         })));
     };
 
@@ -217,7 +232,10 @@ export default class StudioDock extends View {
         .child(div().text_size(13.5).truncate().child(label));
 
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
-      .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
+      .on_mouse_up("left", (_e, cx) => { this.drag = null; cx.notify(); }).px(open ? 10 : 4).gap(6)
+      .when(Boolean(moving), (el) => el.cursor_grabbing())
+      // Dragged out of the dock: cancel, so the tab doesn't stay lifted.
+      .on_hover((h, cx) => { if (!h && this.drag) { this.drag = null; cx.notify(); } })
       .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
