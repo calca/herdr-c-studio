@@ -88,7 +88,7 @@ export default class StudioSwitch extends View {
 
     return v_flex().id("c-studio-switch").track_focus(this.handle).w_full().py(8).gap(2)
       .bg(t.popover.slice(0, 7) + "eb").rounded(14).shadow_lg().border(1).border_color(t.foreground + "26")
-      .opacity(this.shown ? 1 : 0).transition("opacity", { duration: 120, easing: "ease-out" })
+      .opacity(this.shown ? 1 : 0).transition("opacity", { duration: 200, easing: "ease-out" })
       .on_modifiers_changed((e) => { if (!e.modifiers.control) this.finish(true); })
       .on_key_up((e) => { if (e.key === "tab" && !e.modifiers.control) this.finish(true); })
       .on_key_down((e, cx) => {

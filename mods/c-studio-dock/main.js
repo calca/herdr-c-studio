@@ -83,7 +83,7 @@ export default class StudioDock extends View {
   // Same box for spinner and dot, so a tab starting to work doesn't shift its row.
   dot(t, status, size = 8) {
     const box = div().size(size + 4).flex_none().flex().items_center().justify_center();
-    if (status === "working") return box.child(svg("mods/workspace-chrome/spinner.svg").size(size + 4).text_color(t.working).spin(900));
+    if (status === "working") return box.child(svg("mods/workspace-chrome/spinner.svg").size(size + 4).text_color(t.working).spin(1200));
     if (status === "blocked") return box.child(div().size(size).rounded(size / 2).bg(t.blocked).loop("opacity", { from: 0.35, to: 1, period: 1400 }));
     if (status === "done") return box.child(div().size(size).rounded(size / 2).bg(t.done));
     return box;
@@ -218,7 +218,7 @@ export default class StudioDock extends View {
 
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", () => { this.drag = null; }).px(open ? 10 : 4).gap(6)
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 180, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))

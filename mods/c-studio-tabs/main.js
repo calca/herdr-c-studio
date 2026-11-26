@@ -221,7 +221,7 @@ export default class Tabs extends View {
         // Spinner and dot share one box, so the pill keeps its width when an agent starts working.
         .when(["working", "blocked", "done"].includes(c.status), el => el.child(div().size(14).flex_none().flex().items_center().justify_center()
           .child(c.status === "working"
-            ? svg("mods/workspace-chrome/spinner.svg").size(14).text_color(t.working).spin(900)
+            ? svg("mods/workspace-chrome/spinner.svg").size(14).text_color(t.working).spin(1200)
             : div().size(6).rounded(3).bg(t[c.status]))))
         .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, c.active && pin ? t.foreground : t.muted)))
         .when(pin && !program?.icon, el => el.child(svg("mods/workspace-chrome/pin.svg").size(14)))

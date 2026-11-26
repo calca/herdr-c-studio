@@ -117,13 +117,13 @@ export default class Pane extends View {
       // Herdr's pane-drag grip sits at the top center of split tabs: keep that spot clear.
       .when(grip, el => el.child(div().w(64).flex_none()))
       .child(h_flex().when(grip, el => el.flex_1()).when(!grip, el => el.flex_none()).min_w(0).gap(8).items_center().justify_end()
-        .when(st === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(900)))
+        .when(st === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(14).flex_none().text_color(t.working).spin(1200)))
         .when(st === "blocked", el => el.child(div().flex_none().px(6).h(20).flex().items_center().rounded(5).bg(t.blocked + "26").text_size(11.5).font_semibold().text_color(t.blocked).child("Needs you")))
         .when(st === "done", el => el.child(div().size(7).flex_none().rounded(4).bg(t.done)))
         // Hover: the buttons slide open and fade in; otherwise they take no room.
         .child(h_flex().flex_none().overflow_hidden().justify_end()
-          .w(this.hovered ? (this.btnW ?? 94) : 0).transition("width", { duration: 160, easing: "ease-out" })
-          .opacity(this.hovered ? 1 : 0).transition("opacity", { duration: 160, easing: "ease-out" })
+          .w(this.hovered ? (this.btnW ?? 94) : 0).transition("width", { duration: 200, easing: "ease-out" })
+          .opacity(this.hovered ? 1 : 0).transition("opacity", { duration: 200, easing: "ease-out" })
           .child(h_flex().id(`ph-btns-${pane}`).flex_none().gap(2).items_center()
           .on_size_change((size, cx) => { if (size.width !== this.btnW) { this.btnW = size.width; cx.notify(); } })
           // Zoomed: the other panes are hidden; say so, and click to bring them back.

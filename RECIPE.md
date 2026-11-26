@@ -141,6 +141,8 @@ Themes:
   - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.
   - Mission Control cards are inset (`#00000018`, the panel darkened); hover and selection lift them to `foreground + "0d"`.
 
+- **Quiet motion:** fades are 200 ms `ease-out`; Mission Control rises 8 px (cards 4 px, 12 ms apart) on the way in and only fades on the way out; spinners turn once in 1.2 s.
+
 ## Watch out
 
 - **Install with `./install.sh` when you can.** It copies the layout, the 14 themes and the mods, merges `keys.c-studio.json` into `keys.json`, and installs the optional Copilot CLI status hooks (`hooks/copilot/` → `~/.copilot/hooks`). If you copy only `layouts/` and `mods/`, the themes are missing: also copy `themes/c-studio-*.json` and merge the key section.

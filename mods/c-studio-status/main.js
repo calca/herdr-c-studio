@@ -200,7 +200,7 @@ export default class WorkspaceStatus extends View {
         .when(this.diff.fresh > 0, (d) => d.child(div().text_color(soft).child(`${this.diff.fresh} new`)))))
       .when(Boolean(this.diff?.ahead || this.diff?.behind), el => el.child(click(h_flex().gap(5).items_center(), "status-sync", (cx) => this.sync(cx))
         .tooltip(this.diff.behind > 0 ? "Pull (fast-forward)" : "Push")
-        .when(this.syncing, (d) => d.child(svg("mods/workspace-chrome/spinner.svg").size(12).spin(900)))
+        .when(this.syncing, (d) => d.child(svg("mods/workspace-chrome/spinner.svg").size(12).spin(1200)))
         .when(this.diff.ahead > 0, (d) => d.child(div().child(`↑${this.diff.ahead}`)))
         .when(this.diff.behind > 0, (d) => d.child(div().child(`↓${this.diff.behind}`)))))
       .child(div().flex_1())
