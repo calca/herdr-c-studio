@@ -134,6 +134,13 @@ Themes:
   - ⇧⌘E files, ⇧⌘G changes;
   - ⌘⇧ + arrows resize the pane.
 
+- **One scale for color and alpha** (keep new UI on it):
+  - Glass: `glass(t, 0.6)` at rest, `0.65` on hover or when active; panels use `glass(t)`.
+  - Over glass: hover `foreground + "14"` (8%), selected `"1a"` (10%), wells and segmented controls `"0d"` (5%), borders `"14"`, status tints `<status> + "26"` (15%), drop targets `"33"`.
+  - Popovers: `popover` at `"eb"` (92%), border `foreground + "26"`.
+  - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.
+  - Mission Control cards are inset (`#00000018`, the panel darkened); hover and selection lift them to `foreground + "0d"`.
+
 ## Watch out
 
 - **Install with `./install.sh` when you can.** It copies the layout, the 14 themes and the mods, merges `keys.c-studio.json` into `keys.json`, and installs the optional Copilot CLI status hooks (`hooks/copilot/` → `~/.copilot/hooks`). If you copy only `layouts/` and `mods/`, the themes are missing: also copy `themes/c-studio-*.json` and merge the key section.

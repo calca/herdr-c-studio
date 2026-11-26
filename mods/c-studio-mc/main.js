@@ -71,7 +71,7 @@ export default class MissionControl extends View {
     };
     const mark = (st, size) => st === "working"
       ? svg("mods/workspace-chrome/spinner.svg").size(size + 4).flex_none().text_color(t.working).spin(900)
-      : div().size(size).rounded(size / 2).flex_none().bg(st === "idle" ? fg + "66" : t[st] ?? t.dim);
+      : div().size(size).rounded(size / 2).flex_none().bg(t[st] ?? t.dim);
     const enter = (el, i) => el.relative().top(this.shown ? 0 : 10).opacity(this.shown ? 1 : 0)
       .transition("opacity", { duration: 260, delay: Math.min(i, 15) * 18, easing: "ease-out" })
       .transition("top", { duration: 320, delay: Math.min(i, 15) * 18, easing: "ease-out" });
@@ -81,17 +81,17 @@ export default class MissionControl extends View {
       const color = t[a.status] ?? t.dim;
       const name = title(a);
       return enter(h_flex().id(`mc-${a.pane}`).w(300).h(68).flex_none().pr(12).gap(12).rounded(12).overflow_hidden().cursor_pointer()
-        .bg(on ? fg + "10" : "#00000018").border(1).border_color(on ? fg + "10" : fg + "10")
-        .hover((s) => s.bg(fg + "1a"))
+        .bg(on ? fg + "0d" : "#00000018").border(1).border_color(on ? fg + "0d" : fg + "14")
+        .hover((s) => s.bg(fg + "0d"))
         .on_mouse_down("left", stop).on_click(() => this.go(a))
         .child(div().ml(8).w(3).h(40).rounded(2).flex_none().bg(color))
         .child(v_flex().flex_1().min_w(0).gap(6)
           .child(h_flex().gap(9).items_center()
-            .child(icon(a.program, 17, fg + "d0"))
+            .child(icon(a.program, 17, t.muted))
             .child(div().flex_1().truncate().text_size(14).font_medium().text_color(fg).child(name)))
-          .child(h_flex().gap(8).items_center().text_size(11.5).text_color(fg + "c0")
+          .child(h_flex().gap(8).items_center().text_size(11.5).text_color(t.muted)
             .child(div().flex_1().truncate().child(where(a)))
-            .child(div().flex_none().text_color(on ? fg + "c0" : fg + "80").child(on ? "↩ vai" : scope ? "" : a.space_name)))), ordered.indexOf(a));
+            .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ vai" : scope ? "" : a.space_name)))), ordered.indexOf(a));
     };
 
     const section = ([st, label], i) => {
@@ -103,9 +103,9 @@ export default class MissionControl extends View {
           .when(st === "idle", (el) => el.cursor_pointer().on_mouse_down("left", stop)
             .on_click((_e, cx) => { this.idleOpen = !this.idleOpen; cx.notify(); }))
           .child(mark(st, 8))
-          .child(div().text_size(12).font_semibold().text_color(st === "idle" ? fg + "c0" : fg).child(label.toUpperCase()))
-          .child(div().text_size(12).font_semibold().text_color(st === "idle" ? fg + "80" : t[st]).child(String(mine.length)))
-          .when(st === "idle", (el) => el.child(div().text_size(12).text_color(fg + "80").child(folded ? "›" : "⌄"))))
+          .child(div().text_size(12).font_semibold().text_color(st === "idle" ? t.muted : fg).child(label.toUpperCase()))
+          .child(div().text_size(12).font_semibold().text_color(st === "idle" ? t.dim : t[st]).child(String(mine.length)))
+          .when(st === "idle", (el) => el.child(div().text_size(12).text_color(t.dim).child(folded ? "›" : "⌄"))))
         .when(!folded, (el) => el.child(h_flex().flex_wrap().gap(12).children(mine.map(card))));
     };
 
@@ -151,8 +151,8 @@ export default class MissionControl extends View {
         .transition("top", { duration: 320, easing: "ease-out" })
         .child(v_flex().id("mc-body").flex_1().min_h(0).overflow_y_scroll().px(20).py(18).gap(24)
           .children([...COLUMNS, ["idle", "Inattivi"]].map(section).filter(Boolean))
-          .when(!list.length, (el) => el.child(div().text_color(fg + "c0").child("Nessun agente"))))
-        .child(h_flex().h(36).flex_none().px(20).items_center().gap(16).text_size(11.5).text_color(fg + "c0").border_t(1).border_color(fg + "14")
+          .when(!list.length, (el) => el.child(div().text_color(t.muted).child("Nessun agente"))))
+        .child(h_flex().h(36).flex_none().px(20).items_center().gap(16).text_size(11.5).text_color(t.muted).border_t(1).border_color(fg + "14")
           .child("↩ vai").child("frecce scegli").child("tab space").child("i inattivi").child("esc chiudi")));
   }
 }
