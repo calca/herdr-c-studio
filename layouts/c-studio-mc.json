@@ -23,7 +23,8 @@
       "type": "block",
       "content": {
         "mod": "c-studio-mc"
-      }
+      },
+      "window_drag": true
     }
   ]
 }

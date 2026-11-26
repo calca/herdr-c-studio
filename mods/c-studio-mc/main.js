@@ -45,6 +45,7 @@ export default class MissionControl extends View {
   }
 
   render() {
+    const stop = (_e, cx) => cx.stop_propagation();
     const t = theme();
     const scope = shared(SCOPE) ?? null;
     const all = spaces().filter((s) => s.name !== "~" || agents().some((a) => a.space === s.id));
@@ -69,7 +70,7 @@ export default class MissionControl extends View {
         .relative().top(this.shown ? 0 : 10).opacity(this.shown ? 1 : 0)
         .transition("opacity", { duration: 260, delay: Math.min(i, 15) * 18, easing: "ease-out" })
         .transition("top", { duration: 320, delay: Math.min(i, 15) * 18, easing: "ease-out" })
-        .on_click(() => this.go(a))
+        .on_mouse_down("left", stop).on_click(() => this.go(a))
         .child(h_flex().gap(10).items_center()
           .child(icon(a.program, 18, fg + "d0"))
           .child(div().flex_1().truncate().text_size(14).font_medium().text_color(fg).child(name))
@@ -87,7 +88,7 @@ export default class MissionControl extends View {
         .text_color(on ? fg : t.muted).bg(glass(t, on ? 0.65 : 0.6))
         .when(on, (d) => d.font_medium())
         .hover((h) => h.bg(glass(t, 0.65)).text_color(fg))
-        .on_click((_e, cx) => { setShared(SCOPE, s?.id ?? null); this.at = 0; cx.notify(); })
+        .on_mouse_down("left", stop).on_click((_e, cx) => { setShared(SCOPE, s?.id ?? null); this.at = 0; cx.notify(); })
         .child(s ? s.name : "Tutti");
     };
 
@@ -127,7 +128,7 @@ export default class MissionControl extends View {
         .child(h_flex().gap(4).items_center().child(chip(null)).children(all.map(chip)))
         .child(div().id("mc-x").size(38).flex_none().rounded(19).flex().items_center().justify_center().cursor_pointer()
           .bg(glass(t, 0.6)).text_color(t.muted).hover((h) => h.bg(glass(t, 0.65)).text_color(fg))
-          .on_click(() => this.close()).child(svg("mods/workspace-chrome/x.svg").size(15))))
+          .on_mouse_down("left", stop).on_click(() => this.close()).child(svg("mods/workspace-chrome/x.svg").size(15))))
       // The dark panel, like the spaces dock.
       .child(v_flex().id("mc-panel").flex_1().min_h(0).mt(10).mx(12).mb(12).rounded(16).bg(glass(t))
         .relative().top(this.shown ? 0 : 24).opacity(this.shown ? 1 : 0)
