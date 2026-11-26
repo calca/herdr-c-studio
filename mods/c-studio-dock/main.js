@@ -97,6 +97,19 @@ export default class StudioDock extends View {
       .child(glyph);
   }
 
+  // The tab being dragged, under the pointer: light, a little see-through.
+  ghost(t) {
+    const d = this.drag;
+    const tab = spaces().flatMap((x) => x.tabs).find((x) => x.id === d.tab);
+    if (!tab) return div();
+    const { name, program } = tabName(tab);
+    return h_flex().absolute().left(this.pointer.x - d.grab.x).top(this.pointer.y - d.grab.y).w(d.width).h(38).px(10).gap(8)
+      .items_center().rounded(8).bg(glass(t, 0.85)).border(1).border_color(t.foreground + "14").shadow_lg().opacity(0.9)
+      .child(this.dot(t, tab.status, 6))
+      .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, t.foreground)))
+      .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(t.foreground).child(name));
+  }
+
   render(cx) {
     const t = theme();
     const pinned = shared("dock.pinned") === true;
@@ -196,7 +209,8 @@ export default class StudioDock extends View {
             .when(focused, (el) => el.bg(t.foreground + "1a").font_semibold())
             .when(lifted, (el) => el.opacity(0.4))
             .on_mouse_down("left", (e) => {
-              this.drag = { space: s.id, tab: c.id };
+              this.drag = { space: s.id, tab: c.id, grab: e.local_position ?? { x: 20, y: 19 }, width: e.bounds?.width ?? 200 };
+              this.pointer = null;
               run("space.select", { id: s.id });
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });
             })
@@ -211,7 +225,8 @@ export default class StudioDock extends View {
           // so the row moving down under the pointer doesn't lose the drop.
           const slot = (on, top) => div().h(on ? 42 : 0).flex_none().overflow_hidden()
             .transition("height", { duration: 200, easing: "ease-out" })
-            .child(div().h(38).ml(16).mr(4).when(!top, (d) => d.mt(4)).rounded(8).bg(color + "26"));
+            .child(div().h(38).ml(16).mr(4).when(!top, (d) => d.mt(4)).rounded(8)
+              .bg(t.foreground + "0d").border(1).border_color(t.foreground + "14"));
           return v_flex().id(`dock-tab-${c.id}`)
             .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
             // Drop on another tab of the same space: take its place.
@@ -234,8 +249,15 @@ export default class StudioDock extends View {
     return v_flex().id("dock-root").when(this.docked, (el) => el.w_full()).when(!this.docked, (el) => el.w(dockWidth())).py(10)
       .on_mouse_up("left", (_e, cx) => { this.drag = null; cx.notify(); }).px(open ? 10 : 4).gap(6)
       .when(Boolean(moving), (el) => el.cursor_grabbing())
-      // Dragged out of the dock: cancel, so the tab doesn't stay lifted.
-      .on_hover((h, cx) => { if (!h && this.drag) { this.drag = null; cx.notify(); } })
+      // The ghost follows the pointer; released anywhere else, the drag is over.
+      .on_window_mouse_move((e, cx) => {
+        if (!this.drag) return;
+        if (e.pressed_button !== "left") { this.drag = null; this.pointer = null; return cx.notify(); }
+        this.pointer = e.local_position;
+        cx.notify();
+      })
+      .relative()
+      .when(Boolean(moving && this.pointer), (el) => el.child(this.ghost(t)))
       .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
