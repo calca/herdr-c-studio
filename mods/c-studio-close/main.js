@@ -43,6 +43,9 @@ export default class CloseTab extends View {
     const tab = this.tab();
     if (!tab) { this.done(); return div(); }
     const busy = busyPanes(tab.id);
+    // Pinned and running nothing: only the "are you sure?".
+    const idle = busy.length === 0;
+    const pinned = props()?.pinned === true;
     const names = [...new Set(busy.map((p) => p.program.name))].join(", ");
     const button = (id, label, primary, action) => div().id(id).h(30).px(14).flex().items_center().rounded(8).cursor_pointer()
       .text_size(13).font_medium()
@@ -53,17 +56,19 @@ export default class CloseTab extends View {
     return v_flex().id("close-tab").size_full().p(20).gap(8).bg(t.popover.slice(0, 7) + "eb").track_focus(this.handle)
       .on_key_down((e, cx) => {
         if (e.key === "escape") this.done();
-        else if (e.key === "enter") this.park(tab);
+        else if (e.key === "enter") idle ? this.stop(tab) : this.park(tab);
         else if (e.key === "backspace" && e.modifiers.platform) this.stop(tab);
         else return;
         cx.stop_propagation();
       })
-      .child(div().text_size(15).font_semibold().text_color(t.foreground).truncate().child(`Close “${tabName(tab).name}”?`))
-      .child(div().text_size(13).text_color(t.muted).child(`${names || "A program"} is still running. Park keeps it running in the background; Close stops it.`))
+      .child(div().text_size(15).font_semibold().text_color(t.foreground).truncate().child(`Close ${pinned ? "pinned " : ""}“${tabName(tab).name}”?`))
+      .child(div().text_size(13).text_color(t.muted).child(idle
+        ? "This tab is pinned. Unpin it with ctrl+cmd+P, or close it anyway."
+        : `${names || "A program"} is still running. Park keeps it running in the background; Close stops it.`))
       .child(div().flex_1())
       .child(h_flex().gap(8).justify_end()
         .child(button("close-cancel", "Cancel", false, () => this.done()))
-        .child(button("close-close", "Close  ⌘⌫", false, () => this.stop(tab)))
-        .child(button("close-park", "Park  ↵", true, () => this.park(tab))));
+        .child(button("close-close", idle ? "Close  ↵" : "Close  ⌘⌫", idle, () => this.stop(tab)))
+        .when(!idle, (el) => el.child(button("close-park", "Park  ↵", true, () => this.park(tab)))));
   }
 }

@@ -29,7 +29,9 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - `mods/c-studio-switch` – ⌃Tab switcher, like ⌘Tab for apps: hold ⌃ and press Tab (⇧Tab goes back) to walk your recent tabs across all spaces, release ⌃ to go there; a quick ⌃Tab flips to the previous tab, Esc cancels
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, tabs sorted by Status, Recent or A–Z (tab switches), ⌘R renames and ⌘⌫ closes the selected tab, "Move tab to …" moves the focused tab to another space (processes keep running); parked terminals are listed too (↵ resumes one as a tab, ⌘⌫ ends it)
 - Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
-- `mods/c-studio-close` – × / ⌘W on a tab running more than a shell asks: Park (keep it running in the background), Close, or Cancel
+- `mods/c-studio-close` – × / ⌘W on a tab running more than a shell asks: Park (keep it running in the background), Close, or Cancel; on a pinned tab it asks before closing
+- `mods/c-studio-menu` – right-click on a tab (tab bar or dock): Rename, Pin / Unpin, New tab, Close
+- Pinned tabs: ⌃⌘P, the tab menu or the palette pins a tab; it moves to the front of its space, shows as just its icon in the tab bar and with a pin in the dock, palette and switcher
 - Spaces stay open: when a space's last tab is closed, parked or moved, a "New tab" launcher takes its place (it goes once a real tab opens); a space closes only with its own ×
 - `mods/c-studio-launch` – new-tab launcher (⌘K → New tab…; ⌘T and + open a terminal straight away): Terminal or an installed agent, in the folder you came from, a recent folder (⌥1–5), or a new worktree
 - `mods/c-studio-links` – ⌘-click in a terminal: a code file opens in VS Code at the clicked line (`app.ts:42:7`), an image or PDF in Quick Look; remote terminals and everything else keep Herdr's handling

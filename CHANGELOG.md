@@ -11,6 +11,7 @@ First public release.
 - **Agent status** – working, done and needs you in the dock, the tabs and the status bar; ⌘J jumps to the next agent that needs you.
 - **⌘-click links** – code files open in VS Code at the clicked line, images and PDFs in Quick Look.
 - **Pane resize** – ⌘⇧ + arrows.
+- **Pinned tabs** – ⌃⌘P or right-click → Pin keeps a tab first in its space, as an icon in the tab bar, and asks before closing it.
 - **Arrow navigation** – ⌃⌘←/→ for the previous / next tab, ⌃⌘↑/↓ for the previous / next space; no [ ] keys, so they work on Italian and other layouts.
 - **Focus veil** – panes you are not in fade a little.
 - **⌃Tab switcher** – hold ⌃ and press Tab to walk your recent tabs across all spaces, release to go there; a quick ⌃Tab flips back.

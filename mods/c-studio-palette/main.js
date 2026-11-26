@@ -2,7 +2,7 @@
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { spaces, panes, run, theme, props, closeOverlay, shared, setShared, focused, terminals } from "herdr";
-import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab, dropPlaceholders } from "./kit.js";
+import { togglePanel, pinDock, tabName, openLauncher, newTerminal, closeTab, dropPlaceholders, isPinned, togglePin } from "./kit.js";
 
 const ROW_H = 44;
 const RECENT = "c-studio-palette.recent";
@@ -84,7 +84,7 @@ export default class StudioPalette extends View {
     const all = panes();
     const tabs = spaces().filter((w) => !this.scope || w.id === this.scope.id).flatMap((w) => w.tabs.map((c) => ({ c, w, name: tabName(c, all).name })))
       .map(({ c, w, name }) => ({
-      kind: "tab", key: `tab:${c.id}`, id: c.id, label: name, sub: w.name, status: c.status, here: w.active && c.active,
+      kind: "tab", key: `tab:${c.id}`, id: c.id, label: name, sub: w.name, status: c.status, here: w.active && c.active, pinned: isPinned(c.id),
       go: () => run("tab.select", { id: c.id }),
     }));
     const rank = { blocked: 0, done: 1, working: 2 };
@@ -96,6 +96,7 @@ export default class StudioPalette extends View {
     if (!this.scope && sort === "status") tabs.sort((a, b) => (rank[a.status] ?? 3) - (rank[b.status] ?? 3));
     if (!this.scope && sort === "recent") tabs.sort((a, b) => (a.here ? 1 : 0) - (b.here ? 1 : 0) || age(a) - age(b));
     if (!this.scope && sort === "az") tabs.sort(az);
+    if (!this.scope) tabs.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     const spaceItems = spaces().map((w) => ({
       kind: "action", key: `space:${w.id}`, label: w.name, sub: "Space", icon: "◇", go: () => run("space.select", { id: w.id }),
     }));
@@ -118,7 +119,8 @@ export default class StudioPalette extends View {
     const agentItems = known.filter((a) => a.installed).map((a) => ({
       kind: "action", key: `agent:${a.name}`, label: `New ${a.name}`, sub: "Agent", icon: "✦", go: () => { run("tab.new", { name: a.name, argv: a.run }); dropPlaceholders(f?.space); },
     }));
-    const acts = [...spaceItems, ...moveItems, ...agentItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
+    const pinItems = f?.tab ? [{ kind: "action", key: "act:pin", label: isPinned(f.tab) ? "Unpin tab" : "Pin tab", hint: "⌃⌘P", icon: "⌖", go: () => togglePin(f.tab) }] : [];
+    const acts = [...spaceItems, ...moveItems, ...agentItems, ...pinItems, ...ACTIONS.map((a) => ({ kind: "action", key: `act:${a.label}`, ...a }))];
     const words = this.filter.toLowerCase().split(/\s+/).filter(Boolean);
     const list = this.scope ? tabs : [...tabs, ...parked, ...acts];
     if (!words.length && this.scope) return list;
@@ -182,6 +184,7 @@ export default class StudioPalette extends View {
         .on_click(() => this.go(item))
         .child(item.kind !== "action" ? dot(item.status) : div().w(14).flex_none().text_color(t.muted).child(item.icon))
         .child(div().flex_1().truncate().text_size(14.5).text_color(t.foreground).when(item.here, (d) => d.font_semibold()).child(item.label))
+        .when(Boolean(item.pinned), (el) => el.child(svg("mods/workspace-chrome/pin.svg").size(12).flex_none().text_color(t.dim)))
         .when(on && item.kind === "tab", (el) => el.child(div().text_size(11.5).text_color(t.dim).child("⌘R rename · ⌘⌫ close")))
         .when(on && item.kind === "parked", (el) => el.child(div().text_size(11.5).text_color(t.dim).child("↵ resume as tab · ⌘⌫ end")))
         .when(item.sub && !(on && item.kind !== "action"), (el) => el.child(div().text_size(12).text_color(t.dim).child(item.sub)))

@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys, layout } from "herdr";
-import { glass, SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon } from "./kit.js";
+import { spaces, agents, panes, theme, run, props, placement, shared, setShared, nextCommand, keys, layout, openOverlay } from "herdr";
+import { glass, SIDEBAR, dockWidth, find, pinDock, tabName, newTerminal, spaceColor, closeTab, moveTab, setSpaceColor, MARK, SPACE_COLORS, programIcon, isPinned } from "./kit.js";
 
 
 const FOLDED = "dock.folded";
@@ -195,6 +195,7 @@ export default class StudioDock extends View {
               run("space.select", { id: s.id });
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });
             })
+            .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "c-studio-menu", kind: "popup", width: 200, props: { target: { id: c.id, space: s.id } } }); })
             // Drop on another tab of the same space: take its place.
             .on_mouse_up("left", () => {
               const d = this.drag; this.drag = null;
@@ -203,6 +204,7 @@ export default class StudioDock extends View {
             .child(this.dot(t, c.status, 6))
             .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, focused ? t.foreground : t.muted)))
             .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
+            .when(isPinned(c.id) && !(over && !this.drag), (el) => el.child(svg("mods/workspace-chrome/pin.svg").size(12).flex_none().text_color(t.dim)))
             .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => closeTab(c.id))))
             .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
         })));

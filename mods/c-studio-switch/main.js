@@ -1,9 +1,9 @@
 // ctrl+tab switcher: recent tabs across spaces, like cmd+tab for apps.
 // Hold ctrl, press tab (shift+tab goes back), release ctrl to go there.
-import { View, div } from "gpui-kit";
+import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { spaces, panes, run, theme, props, closeOverlay, shared, setShared } from "herdr";
-import { tabName, programIcon, spaceColor } from "./kit.js";
+import { tabName, programIcon, spaceColor, isPinned } from "./kit.js";
 
 const RECENT = "c-studio.recent";
 const SWITCH = "c-studio-switch";
@@ -79,6 +79,7 @@ export default class StudioSwitch extends View {
         .child(div().w(8).flex_none().flex().justify_center().child(st && st !== "idle" ? div().size(6).rounded(3).bg(t[st] ?? t.dim) : div()))
         .child(div().w(18).flex_none().flex().justify_center().when(Boolean(item.program?.icon), (el) => el.child(programIcon(item.program, 15, on ? t.foreground : t.muted))))
         .child(div().flex_1().min_w(0).truncate().text_size(14).text_color(on ? t.foreground : t.muted).when(on, (d) => d.font_semibold()).child(item.name))
+        .when(isPinned(item.id), (el) => el.child(svg("mods/workspace-chrome/pin.svg").size(12).flex_none().text_color(t.dim)))
         .when(st === "blocked" || st === "working" || st === "done", (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st] ?? t.dim).child(STATUS[st])))
         .child(h_flex().flex_none().gap(6).items_center()
           .child(div().size(7).rounded(4).bg(color))

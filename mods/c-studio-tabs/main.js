@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand, agents } from "herdr";
-import { glass, find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon } from "./kit.js";
+import { glass, find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon, isPinned, togglePin, keepPinnedFirst } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -40,6 +40,7 @@ export default class Tabs extends View {
         else if (cmd === "close") closeTab(focused()?.tab);
         else if (cmd === "files" || cmd === "changes") togglePanel(cmd);
         else if (cmd === "waiting") this.nextWaiting();
+        else if (cmd === "pin") togglePin(focused()?.tab);
         else if (cmd === "switch" || cmd === "switch_back") this.switcher(cmd === "switch" ? 1 : -1);
         c.notify();
       }
@@ -157,6 +158,7 @@ export default class Tabs extends View {
     const space = spaces().find(p => p.active);
     this.syncPanel(space, PANELS.map(([id]) => id));
     this.trackRecent();
+    keepPinnedFirst();
     const w = window();
     // No sidebar column: the dock floats, so the tab bar always clears the traffic lights.
     const lightsPadding = w?.platform === "macos" && w.titlebar === "none" && !w.fullscreen ? 96 : 16;
@@ -185,7 +187,9 @@ export default class Tabs extends View {
     const hidden = (c) => all.filter(p => p.tab === c.id).length - 1;
     const item = (c, i) => {
       const { name, program } = tabName(c, all);
-      return h_flex().id(`tab-${c.id}`).h(38).px(14).gap(7).rounded(19).items_center().flex_none().text_size(14)
+      // Pinned: just the icon, like Safari; the name is in the tooltip.
+      const pin = isPinned(c.id);
+      return h_flex().id(`tab-${c.id}`).h(38).px(pin ? 12 : 14).gap(7).when(pin, el => el.tooltip(name)).rounded(19).items_center().flex_none().text_size(14)
         // A rename or status dot on this or an earlier tab can push the active one out.
         .on_size_change((size, cx) => {
           this.widths[c.id] = size.width;
@@ -200,14 +204,15 @@ export default class Tabs extends View {
           if (from !== null && from !== i) run("tab.move", { id: shown[from].id, index: space.tabs.findIndex(x => x.id === c.id) + 1 });
           else run("tab.select", { id: c.id });
         })
-        .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
+        .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "c-studio-menu", kind: "popup", width: 200, props: { target: { id: c.id, space: space.id } } }); })
         // Spinner and dot share one box, so the pill keeps its width when an agent starts working.
         .when(["working", "blocked", "done"].includes(c.status), el => el.child(div().size(14).flex_none().flex().items_center().justify_center()
           .child(c.status === "working"
             ? svg("mods/workspace-chrome/spinner.svg").size(14).text_color(t.working).spin(900)
             : div().size(6).rounded(3).bg(t[c.status]))))
-        .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, t.muted)))
-        .when(!compact || c.active, el => el.child(div().max_w(170).truncate().child(name)))
+        .when(Boolean(program?.icon), el => el.child(programIcon(program, 16, c.active && pin ? t.foreground : t.muted)))
+        .when(pin && !program?.icon, el => el.child(svg("mods/workspace-chrome/pin.svg").size(14)))
+        .when(!pin && (!compact || c.active), el => el.child(div().max_w(170).truncate().child(name)))
         // Zoomed: one pane shown, the rest hidden behind it. Click the badge to show them all.
         .when(c.zoomed && hidden(c) > 0, el => el.child(h_flex().id(`zoom-${c.id}`).h(18).px(6).gap(3).items_center().rounded(9).flex_none()
           .bg(t.dim + "26").text_size(11.5).font_medium().text_color(t.muted).hover(s => s.text_color(t.foreground))
@@ -215,7 +220,7 @@ export default class Tabs extends View {
           .on_click((_e, cx) => { cx.stop_propagation(); const z = all.find(p => p.tab === c.id && p.zoomed); if (z) run("pane.zoom", { pane: z.pane }); })
           .child(svg("mods/c-studio-pane/unzoom.svg").size(11)).child(`${hidden(c)}`)))
         .when(c.active, el => el.bg(selectedBg(t)).font_semibold())
-        .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); closeTab(c.id); }).child(svg("mods/pane/close.svg").size(13))));
+        .when(c.active && !pin, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); closeTab(c.id); }).child(svg("mods/pane/close.svg").size(13))));
     };
     const compact = (this.size?.width ?? 1200) < 900;
     const widths = this.widths ?? (this.widths = {});

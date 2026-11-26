@@ -139,10 +139,38 @@ export function keepSpace(tabId) {
 }
 
 // A plain shell closes at once; a running program or agent asks: park (keeps running) or close.
+// Pinned tabs lead their space (moved there for real, so ⌘1–9 and prev/next
+// agree), show as an icon in the tab bar and ask before closing.
+const PINNED = "c-studio.pinned";
+export function isPinned(id) {
+  return (shared(PINNED) ?? []).includes(id);
+}
+
+export function togglePin(id) {
+  const space = spaces().find((s) => s.tabs.some((c) => c.id === id));
+  if (!space) return;
+  const alive = new Set(spaces().flatMap((s) => s.tabs.map((c) => c.id)));
+  const list = (shared(PINNED) ?? []).filter((x) => alive.has(x) && x !== id);
+  const on = !isPinned(id);
+  setShared(PINNED, on ? [...list, id] : list);
+  run("tab.move", { id, index: space.tabs.filter((c) => c.id !== id && list.includes(c.id)).length + 1 });
+}
+
+// A drag or a move can leave a pinned tab behind an unpinned one: one step back per call.
+export function keepPinnedFirst() {
+  const list = shared(PINNED) ?? [];
+  if (!list.length) return;
+  for (const s of spaces()) {
+    const at = s.tabs.findIndex((c, i) => list.includes(c.id) && s.tabs.slice(0, i).some((x) => !list.includes(x.id)));
+    if (at >= 0) return run("tab.move", { id: s.tabs[at].id, index: s.tabs.slice(0, at).filter((x) => list.includes(x.id)).length + 1 });
+  }
+}
+
 export function closeTab(id) {
   if (!id) return;
-  if (!busyPanes(id).length) { keepSpace(id); return run("tab.close", { id }); }
-  openOverlay({ mod: "c-studio-close", kind: "dialog", width: 440, height: 210, props: { tab: id } });
+  const pinned = isPinned(id);
+  if (!pinned && !busyPanes(id).length) { keepSpace(id); return run("tab.close", { id }); }
+  openOverlay({ mod: "c-studio-close", kind: "dialog", width: 440, height: 210, props: { tab: id, pinned } });
 }
 
 const pause = () => exec("sleep", ["0.15"]).catch(() => {});

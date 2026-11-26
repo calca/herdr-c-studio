@@ -69,6 +69,11 @@ Themes:
   - ⌘R renames and ⌘⌫ closes the selected item; ↵ on a parked terminal resumes it as a tab.
   - "Move tab to …" moves the focused tab to another space.
   - With an empty query, tabs are sorted by Status (needs you, done, working, the rest), Recent (the ctrl+tab order, the current tab last) or A–Z. Switch with a click or tab / shift+tab; the choice is kept in `c-studio-palette.sort`.
+- **Pinned tabs (⌃⌘P, `c-studio-tabs.pin`):**
+  - Pin from ⌃⌘P, the right-click menu (`c-studio-menu`, which replaces Herdr's tab menu) or "Pin tab" in the palette. The list is `c-studio.pinned`.
+  - Pinning runs `tab.move` to the front of the space, after the other pinned tabs, so ⌘1–9 and prev / next follow. `keepPinnedFirst()` in `c-studio-tabs` moves a pinned tab back if a drag leaves it behind.
+  - The tab bar shows a pinned tab as just its icon (the name is the tooltip) with no ×; the dock, palette and switcher add a pin. The palette lists pinned tabs first in every sort; the switcher keeps its recent order.
+  - ⌘W, × or Close on a pinned tab asks first (`c-studio-close` with `pinned`).
 - **Switcher (⌃Tab / ⌃⇧Tab, `c-studio-switch`):**
   - Like ⌘Tab for apps: recent tabs across all spaces, newest first, with status, program icon and space.
   - Tab / ⇧Tab (or ↑ / ↓) step while ⌃ is held; releasing ⌃ selects, Esc cancels. The list fades in after 140 ms, so a quick ⌃Tab just flips back.
@@ -95,8 +100,8 @@ Themes:
   - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 55% and a translucent `border`; the dock uses `glass(t)` from `kit.js` (the canvas tint at an alpha that brings the total cover to 65% whatever the canvas alpha). Tabs and the round header buttons (dock toggle, ⌄, +, F, C) share one look: 60% glass, 65% under the pointer, and when selected 65% mixed with the space color. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
-  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
-  - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, space colors, program icons. It is identical in dock, tabs, status, palette and close, because imports only resolve inside a mod's folder.
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-menu` (popup, 200 wide), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
+  - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, pinned tabs, space colors, program icons. It is identical in dock, tabs, status, palette, close, switch and menu, because imports only resolve inside a mod's folder.
 - **Shipped mods used:**
   - `files`, `changes` and `worktree`;
   - `workspace-chrome` for its SVGs (spinner, layers, search, git-branch, terminal).
@@ -111,7 +116,7 @@ Themes:
   - `app.*`: theme, palette, settings.
 - **Shared keys:**
   - `dock.pinned`, `dock.width`, `dock.folded`, `space.colors`;
-  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-palette.sort`, `c-studio.recent`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
+  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-palette.sort`, `c-studio.recent`, `c-studio.pinned`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
 - **Programs run:**
   - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
   - `hc get/label/keep`, to move a tab's terminal to another space.
