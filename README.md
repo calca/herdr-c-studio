@@ -8,7 +8,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 
 ![C-Studio with the spaces dock pinned, dark theme](docs/dock-dark.png)
 
-- **Quiet by default.** Warm light and dark themes, soft edges, no noise. Notifications only when something went wrong.
+- **Quiet by default.** Warm light and dark themes, soft edges, short fades instead of motion, no noise. Notifications only when something went wrong.
 - **One glance, every agent.** Working, done, or waiting on you – in the dock, the tabs and the status bar. ⌘J takes you to the next one that needs you.
 - **Fits the screen you're on.** On a big monitor the dock stays open; on the laptop it folds away; the layers button in the tab bar (or ⌘B) brings it back.
 - **Mission Control.** ⌘. (or the grid button beside the layers button) shows every agent as a card on the frosted window, grouped by what it needs from you.
@@ -21,7 +21,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 ## Contents
 
 - `layouts/c-studio.json` – the layout
-- `layouts/c-studio-mc.json` + `mods/c-studio-mc` – Mission Control (⌘., the grid button in the tab bar, or the palette): a layout of its own, so the dock and terminals step aside and the window glass shows; every agent as a card (icon, title, repo · branch, space, a bar in its status color), newest first, in sections needs you / working / done / idle (click the idle header or press i to fold them), in a dark panel like the dock; filter by space with the round pills or Tab, arrows + ↩ or a click go to the agent, Esc, ⌘. or a click on the title go back (it fades out quietly)
+- `layouts/c-studio-mc.json` + `mods/c-studio-mc` – Mission Control (⌘., the grid button in the tab bar, or the palette): a layout of its own, so the dock and terminals step aside and the window glass shows; every agent as a card (icon, title, repo · branch, space, a bar in its status color), newest first, in sections needs you / working / done / idle (click the idle header or press i to fold them), in a dark panel like the dock; drag the window by the header; filter by space with the round pills or Tab, arrows + ↩ or a click go to the agent, Esc, ⌘. or a click on the title go back (it fades out quietly)
 - `mods/c-studio-dock` – spaces dock with all tabs (pin or fold with ⌘B or the layers button in the tab bar; drag its edge to resize it (220–520 px, remembered), narrow to fold it, auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs (a collapsed space shows how many agents are working or done); spaces in their colors (right-click a space to pick one or rename it), program icons in one color, drag to reorder tabs (a light copy of the tab follows the pointer and a slot opens where it will land) or drop one on another space to move it ("Sposta qui"), × on hover)
 - `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill in the space color, status dot first; centered in one rounded tray with at most 4 tabs, fewer as the window narrows (3 under 1200 px, 2 under 1000, 1 under 800; the active one always shown; the tray never slides over the buttons beside it), round ⌄ and + buttons beside it (⌄ shows how many tabs are hidden and lists them), round F / C panel toggles on the right; ⌘J jumps to the next agent that needs you, in any space
 - Panes you are not in fade a little (`veil` on the pane frame), so the one you work in stands out
@@ -42,7 +42,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - `themes/c-studio-{dark,light}.json` – warm palettes used by the layout; `c-studio-{dark,light}-<color>.json` are accent variants that c-studio-status switches to so the focus border follows the space color
 - `hooks/copilot/herdr-status.{sh,json}` – Copilot CLI hooks that report the agent status to Herdr (OSC 7501): working, done, and needs you only for a real permission prompt or a question to you (not `permissionRequest`, which fires for every tool); installed in `~/.copilot/hooks`, new Copilot sessions pick them up
 - `keys.c-studio.json` – `layout:c-studio` key bindings, merged into `keys.json`
-- `RECIPE.md` – the brief another agent can rebuild C-Studio from (herdr.dev gallery format)
+- `RECIPE.md` – the brief another agent can rebuild C-Studio from (herdr.dev gallery format), including the shared color, transparency and motion scale
 
 ## Requirements
 
