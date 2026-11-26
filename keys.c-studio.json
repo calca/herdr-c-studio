@@ -1,5 +1,6 @@
 {
   "layout:c-studio": {
+    "cmd-.": "layout.switch:c-studio-mc",
     "cmd-b": "c-studio-dock.toggle",
     "cmd-j": "c-studio-tabs.waiting",
     "cmd-k": "mod.open:c-studio-palette",

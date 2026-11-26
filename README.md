@@ -11,6 +11,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - **Quiet by default.** Warm light and dark themes, soft edges, no noise. Notifications only when something went wrong.
 - **One glance, every agent.** Working, done, or waiting on you – in the dock, the tabs and the status bar. ⌘J takes you to the next one that needs you.
 - **Fits the screen you're on.** On a big monitor the dock stays open; on the laptop it folds away; the layers button in the tab bar (or ⌘B) brings it back.
+- **Mission Control.** ⌘. (or the grid button beside the layers button) shows every agent as a card on the frosted window, grouped by what it needs from you.
 - **Nothing gets lost.** Park a running agent instead of closing it, move tabs between spaces, find anything with ⌘K.
 
 | Tab tray, dark | Dock pinned, light | Tab tray, light |
@@ -20,6 +21,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 ## Contents
 
 - `layouts/c-studio.json` – the layout
+- `layouts/c-studio-mc.json` + `mods/c-studio-mc` – Mission Control (⌘., the grid button in the tab bar, or the palette): a layout of its own, so the dock and terminals step aside and the window glass shows; every agent as a card (icon, tab name, space · tab, status) grouped into needs you / working / done / idle, in a dark panel like the dock; filter by space with the round pills or Tab, arrows + ↩ or a click go to the agent, Esc or ⌘. go back
 - `mods/c-studio-dock` – spaces dock with all tabs (pin or fold with ⌘B or the layers button in the tab bar; drag its edge to resize it (220–520 px, remembered), narrow to fold it, auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs (a collapsed space shows how many agents are working or done); spaces in their colors (right-click a space to pick one or rename it), program icons in one color, drag to reorder tabs or drop one on another space to move it, × on hover)
 - `mods/c-studio-tabs` – tab bar with agent session titles; active tab as a soft pill in the space color, status dot first; centered in one rounded tray with at most 4 tabs (the active one always shown), round ⌄ and + buttons beside it (⌄ shows how many tabs are hidden and lists them), round F / C panel toggles on the right; ⌘J jumps to the next agent that needs you, in any space
 - Panes you are not in fade a little (`veil` on the pane frame), so the one you work in stands out

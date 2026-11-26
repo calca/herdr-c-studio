@@ -43,6 +43,7 @@ const ACTIONS = [
   { label: "Close tab", hint: "⌘W", icon: "✕", go: () => closeTab(focused()?.tab) },
   { label: "Rename tab", icon: "✎", go: () => run("tab.rename") },
   { label: "Rename space", icon: "✎", go: () => run("space.rename") },
+  { label: "Mission Control", hint: "⌘.", icon: "▦", go: () => run("layout.switch", { name: "c-studio-mc" }) },
   { label: "Toggle dock", hint: "⌘B", icon: "◧", go: () => pinDock(shared("dock.pinned") !== true) },
   { label: "Files panel", hint: "⇧⌘E", icon: "▤", go: () => togglePanel("files") },
   { label: "Changes panel", hint: "⇧⌘G", icon: "±", go: () => togglePanel("changes") },

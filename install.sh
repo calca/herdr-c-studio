@@ -6,7 +6,7 @@ SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 
 mkdir -p "$DEST/layouts" "$DEST/themes" "$DEST/mods"
-cp "$SRC/layouts/c-studio.json" "$DEST/layouts/"
+cp "$SRC"/layouts/c-studio.json "$SRC"/layouts/c-studio-mc.json "$DEST/layouts/"
 cp "$SRC"/themes/*.json "$DEST/themes/"
 for m in "$SRC"/mods/*/; do
   name="$(basename "$m")"

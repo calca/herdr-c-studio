@@ -154,6 +154,13 @@ export default class Tabs extends View {
       .child(svg("mods/workspace-chrome/layers.svg").size(15));
   }
 
+  // Mission Control (⌘.): every agent at once.
+  mcButton(t) {
+    return round(t, "mc-open").tooltip("Mission Control ⌘.")
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation()).on_click(() => run("layout.switch", { name: "c-studio-mc" }))
+      .child(svg("mods/c-studio-tabs/mc.svg").size(14));
+  }
+
   render() {
     publishViewport();
     const t = theme();
@@ -167,6 +174,7 @@ export default class Tabs extends View {
     if (shared("dock.pinned") === true) return h_flex().id("c-studio-tabs-pinned").size_full().pt(10).pr(16).pl(lightsPadding).gap(4).items_center()
       .on_size_change((size) => { this.autoDock(size); this.autoPanel(size); })
       .child(this.dockToggle(t, true))
+      .child(this.mcButton(t))
       .child(div().flex_1())
       .children(this.pills(t));
     // At most MAX_TABS in the tray, the active one always among them; the rest are in ⌄.
@@ -237,8 +245,9 @@ export default class Tabs extends View {
       })
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
-      .child(h_flex().flex_1().min_w(0).items_center()
-        .child(this.dockToggle(t, false)))
+      .child(h_flex().flex_1().min_w(0).items_center().gap(4)
+        .child(this.dockToggle(t, false))
+        .child(this.mcButton(t)))
       .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).gap(4).items_center().rounded(19)
         .child(h_flex().id("tab-scroll").flex_shrink(1).min_w(0).h_full().items_center().gap(4).overflow_x_scrollbar().track_scroll(this.scroll)
           .on_size_change((size, cx) => { this.view = size.width; if (active >= 0) this.scroll.scroll_to_item(active); cx.notify(); })

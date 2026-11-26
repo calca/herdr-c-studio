@@ -27,7 +27,7 @@ for mode in ("dark", "light"):
             json.dump(v, f, indent=2); f.write("\n")
 PY
 
-cp "$SRC/layouts/c-studio.json" "$DEST/layouts/"
+cp "$SRC"/layouts/c-studio.json "$SRC"/layouts/c-studio-mc.json "$DEST/layouts/"
 cp "$SRC"/themes/c-studio-{dark,light}.json "$SRC"/themes/c-studio-{dark,light}-*.json "$DEST/themes/"
 for m in "$SRC"/mods/c-studio-*/; do
   name="$(basename "$m")"

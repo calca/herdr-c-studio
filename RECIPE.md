@@ -99,13 +99,14 @@ Themes:
     - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
   - A floating `dock` copy that draws nothing and only handles ⌘B: Herdr paints a floating block's frame with the solid theme background, so it can't be glass.
   - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 55% and a translucent `border`; the dock uses `glass(t)` from `kit.js` (the canvas tint at an alpha that brings the total cover to 65% whatever the canvas alpha). Tabs and the round header buttons (dock toggle, ⌄, +, F, C) share one look: 60% glass, 65% under the pointer, and when selected 65% mixed with the space color. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
+- **Layout `layouts/c-studio-mc.json`:** the root look of `c-studio.json` (theme, fonts, `titlebar: "none"`, `window_blur`) around one `c-studio-mc` block. Mission Control is a layout, not an overlay: Herdr has no backdrop blur, so only an empty window lets the frosted glass show; an overlay would show the terminals through it. `layout.switch` opens it and goes back to `c-studio`; the theme picker's accent stays with `c-studio`.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
-  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-menu` (popup, 200 wide), `c-studio-launch` (focusable view), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-menu` (popup, 200 wide), `c-studio-launch` (focusable view), `c-studio-mc` (Mission Control, a layout block: cards fade and slide in, staggered), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
   - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, pinned tabs, space colors, program icons. It is identical in dock, tabs, status, palette, close, switch and menu, because imports only resolve inside a mod's folder.
 - **Shipped mods used:**
   - `files`, `changes` and `worktree`;
-  - `workspace-chrome` for its SVGs (spinner, layers, search, git-branch, terminal).
+  - `workspace-chrome` for its SVGs (spinner, layers, search, git-branch, terminal, x); the grid icon is `c-studio-tabs/mc.svg`.
 - **Commands:**
   - `tab.*`: new, close, move, rename, select.
   - `space.*`: new, close, rename, select.
@@ -117,7 +118,7 @@ Themes:
   - `app.*`: theme, palette, settings.
 - **Shared keys:**
   - `dock.pinned`, `dock.width`, `dock.folded`, `space.colors`;
-  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-palette.sort`, `c-studio.recent`, `c-studio.pinned`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
+  - `c-studio.move`, `c-studio-palette.space`, `c-studio-palette.recent`, `c-studio-palette.sort`, `c-studio-mc.space`, `c-studio.recent`, `c-studio.pinned`, `c-studio-switch`, `c-studio-launch.folders`, `new-menu.agents`.
 - **Programs run:**
   - `git`, read-only (`rev-parse`, `diff --shortstat`, `ls-files`, `rev-list`). The only writes are `git push` / `git pull --ff-only`, and only on a click.
   - `hc get/label/keep`, to move a tab's terminal to another space.
@@ -128,6 +129,7 @@ Themes:
   - ⌘B dock;
   - ⌘J next waiting agent;
   - ⌘K / ⌘P palette;
+  - ⌘. Mission Control (inside it, ⌘. and Esc go back);
   - ⌘T new tab, ⌘W close tab;
   - ⇧⌘E files, ⇧⌘G changes;
   - ⌘⇧ + arrows resize the pane.

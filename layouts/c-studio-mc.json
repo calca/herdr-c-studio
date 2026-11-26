@@ -1,0 +1,29 @@
+{
+  "id": "root",
+  "type": "column",
+  "background": "canvas",
+  "theme": {
+    "light": "c-studio-light",
+    "dark": "c-studio-dark"
+  },
+  "font": "SF Mono",
+  "font_size": 14,
+  "ui_font": "Geist",
+  "titlebar": "none",
+  "traffic_lights": [
+    18,
+    22
+  ],
+  "window_blur": true,
+  "resizable": false,
+  "toast": "c-studio-toast",
+  "children": [
+    {
+      "id": "mc",
+      "type": "block",
+      "content": {
+        "mod": "c-studio-mc"
+      }
+    }
+  ]
+}
