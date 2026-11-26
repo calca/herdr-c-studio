@@ -141,7 +141,8 @@ Themes:
   - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.
   - Mission Control cards are inset (`#00000018`, the panel darkened); hover and selection lift them to `foreground + "0d"`.
 
-- **Quiet motion:** most fades are 200 ms `ease-out`. Mission Control content fades in together over 180 ms and out over 120 ms; the glass stays still. On return to an open Spaces dock, only its rows fade from 85% to full opacity over 160 ms. Spinners turn once in 1.2 s.
+- **Quiet motion:** most fades are 280 ms `ease-out`. Mission Control content fades in together over 260 ms and out over 180 ms; the glass stays still. On return to an open Spaces dock, only its rows fade from 85% to full opacity over 240 ms. Spinners turn once in 1.2 s.
+- **Selected tab in the dock:** icon and name in the space color on a faint pill that starts at the icon; the status dot sits on the right with its time, so the left keeps a clean column of icons. Agent titles drop their " - GitHub Copilot" suffix.
 
 ## Watch out
 

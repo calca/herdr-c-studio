@@ -107,8 +107,8 @@ export default class Pane extends View {
         .when(st === "done", el => el.child(div().size(7).flex_none().rounded(4).bg(t.done)))
         // Hover: the buttons slide open and fade in; otherwise they take no room.
         .child(h_flex().flex_none().overflow_hidden().justify_end()
-          .w(this.hovered ? (this.btnW ?? 94) : 0).transition("width", { duration: 200, easing: "ease-out" })
-          .opacity(this.hovered ? 1 : 0).transition("opacity", { duration: 200, easing: "ease-out" })
+          .w(this.hovered ? (this.btnW ?? 94) : 0).transition("width", { duration: 280, easing: "ease-out" })
+          .opacity(this.hovered ? 1 : 0).transition("opacity", { duration: 280, easing: "ease-out" })
           .child(h_flex().id(`ph-btns-${pane}`).flex_none().gap(2).items_center()
           .on_size_change((size, cx) => { if (size.width !== this.btnW) { this.btnW = size.width; cx.notify(); } })
           // Zoomed: the other panes are hidden; say so, and click to bring them back.

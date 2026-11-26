@@ -193,7 +193,7 @@ export default class StudioPalette extends View {
     };
 
     return v_flex().id("c-studio-palette").track_focus(this.handle).w_full().min_h(0).py(8).gap(6).bg(t.popover.slice(0, 7) + "eb").text_size(13).rounded(14).shadow_lg().border(1).border_color(t.foreground + "26")
-      .opacity(this.shown ? 1 : 0).transition("opacity", { duration: 200, easing: "ease-out" })
+      .opacity(this.shown ? 1 : 0).transition("opacity", { duration: 280, easing: "ease-out" })
       .on_key_down((e, cx) => {
         const k = e.key;
         if (k === "escape" && this.renaming) {

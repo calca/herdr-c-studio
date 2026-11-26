@@ -212,9 +212,11 @@ export default class StudioDock extends View {
           // Where the dragged tab will land: above this one when it comes from below.
           const above = dropHere && s.tabs.findIndex((x) => x.id === c.id) < s.tabs.findIndex((x) => x.id === this.drag.tab);
           const lifted = moving && this.drag.tab === c.id;
-          const row = h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(16).mr(4).px(10).gap(8).items_center().rounded(8).tooltip(name)
-            .relative().hover((x) => x.bg(t.foreground + "14"))
-            .when(focused, (el) => el.bg(t.foreground + "1a").font_semibold())
+          const row = h_flex().id(`dock-tab-row-${c.id}`).h(38).ml(36).mr(4).px(8).gap(8).items_center().rounded(8).tooltip(name)
+            .relative()
+            .hover((x) => x.bg(t.foreground + "14"))
+            // Selected: icon and name in the space color, on a faint pill from the icon on.
+            .when(focused, (el) => el.bg(t.foreground + "0d").font_semibold())
             .when(lifted, (el) => el.opacity(0.4))
             .on_mouse_down("left", (e) => {
               this.drag = { space: s.id, tab: c.id, grab: e.local_position ?? { x: 20, y: 19 }, width: e.bounds?.width ?? 200 };
@@ -223,17 +225,19 @@ export default class StudioDock extends View {
               run(e.click_count === 2 ? "tab.rename" : "tab.select", { id: c.id });
             })
             .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "c-studio-menu", kind: "popup", width: 200, props: { target: { id: c.id, space: s.id } } }); })
-            .child(this.dot(t, c.status, 6))
-            .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, focused ? t.foreground : t.muted)))
-            .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? t.foreground : t.muted).child(name))
+            .when(Boolean(program?.icon), (el) => el.child(programIcon(program, 15, focused ? color : t.muted)))
+            .child(div().flex_1().min_w(0).truncate().text_size(13.5).text_color(focused ? color : t.muted).child(name))
             .when(isPinned(c.id) && !(over && !this.drag), (el) => el.child(svg("mods/workspace-chrome/pin.svg").size(12).flex_none().text_color(t.dim)))
             .when(over && !this.drag, (el) => el.child(this.iconButton(t, `dock-tab-close-${c.id}`, "×", () => closeTab(c.id))))
-            .when(Boolean(st) && !(over && !this.drag), (el) => el.child(div().flex_none().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since))));
+            // Status on the right, with its time: the left keeps a clean column of icons.
+            .when(Boolean(st) && !(over && !this.drag), (el) => el.child(h_flex().flex_none().gap(5).items_center()
+              .child(this.dot(t, c.status, 6))
+              .child(div().text_size(11.5).text_color(t[st.key] ?? t.dim).child(c.status === "blocked" ? st.label : ago(since)))));
           // An empty slot opens where the dragged tab will land; the hover area includes it,
           // so the row moving down under the pointer doesn't lose the drop.
           const slot = (on, top) => div().h(on ? 42 : 0).flex_none().overflow_hidden()
-            .transition("height", { duration: 200, easing: "ease-out" })
-            .child(div().h(38).ml(16).mr(4).when(!top, (d) => d.mt(4)).rounded(8)
+            .transition("height", { duration: 240, easing: "ease-out" })
+            .child(div().h(38).ml(36).mr(4).when(!top, (d) => d.mt(4)).rounded(8)
               .bg(t.foreground + "0d").border(1).border_color(t.foreground + "14"));
           return v_flex().id(`dock-tab-${c.id}`)
             .on_hover((h, cx) => { this.hoverTab = h ? c.id : (this.hoverTab === c.id ? null : this.hoverTab); cx.notify(); })
@@ -268,7 +272,7 @@ export default class StudioDock extends View {
       .relative()
       .when(Boolean(moving && this.pointer), (el) => el.child(this.ghost(t)))
       .when(this.docked, (el) => el.h_full().min_h(0).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a").rounded(16)
-        .when(!this.returning, (d) => d.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" })))
+        .when(!this.returning, (d) => d.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 280, easing: "ease-out" })))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))
@@ -276,7 +280,7 @@ export default class StudioDock extends View {
           .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`))))
       // Only the spaces scroll; the head and "New space" stay in view.
       .child(v_flex().id("dock-list").gap(6).when(this.docked, (el) => el.flex_1().min_h(0).overflow_y_scroll())
-        .when(this.returning, (el) => el.opacity(this.faded ? 0.85 : 1).transition("opacity", { duration: 160, easing: "ease-out" }))
+        .when(this.returning, (el) => el.opacity(this.faded ? 0.85 : 1).transition("opacity", { duration: 240, easing: "ease-out" }))
         .children(all.map((s, i) => row(s, i).flex_none())))
       // Closed, only the icon column peeks out: keep the line under the icons.
       .child(div().flex_none().h(1).my(2).bg(t.border).when(open, (d) => d.mx(8)).when(!open, (d) => d.w(30).ml(8)))

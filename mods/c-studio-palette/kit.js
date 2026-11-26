@@ -73,13 +73,17 @@ export function pinDock(pinned) {
   if (pinned) run("layout.resize", { id: "sidebar", px: dockWidth() });
 }
 
+const escape = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // A tab's label: its given name, else the agent session's title, else the
 // program (nvim, htop…), and for a plain shell the folder it sits in.
 export function tabName(tab, all = panes()) {
   const lead = all.find((p) => p.tab === tab.id && p.program?.agent) ?? all.find((p) => p.tab === tab.id);
   const program = lead?.program ?? null;
   if (tab.named) return { name: tab.name, program };
-  if (program?.agent) return { name: lead.title && lead.title !== program.name ? lead.title : program.name, program };
+  // Agents append their own name to the session title ("Fix login - GitHub Copilot"): the icon already says it.
+  const title = lead?.title?.replace(new RegExp(`\\s+[-–—|]\\s+(GitHub\\s+)?(${escape(program?.name ?? "")}|Copilot)(\\s+CLI)?$`, "i"), "").trim();
+  if (program?.agent) return { name: title && title !== program.name ? title : program.name, program };
   if (program && !program.shell) return { name: program.name, program };
   return { name: folderName(lead?.cwd) ?? program?.name ?? "Terminal", program };
 }

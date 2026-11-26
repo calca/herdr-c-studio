@@ -50,7 +50,7 @@ export default class StudioToast extends View {
       .items_center()
       .bg(t.popover.slice(0, 7) + "eb")
       .opacity(this.shown ? 1 : 0)
-      .transition("opacity", { duration: 200, easing: "ease-out" })
+      .transition("opacity", { duration: 280, easing: "ease-out" })
       .cursor_pointer()
       .hover((s) => s.bg(t.hover))
       .on_click(() => {

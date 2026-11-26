@@ -6,7 +6,7 @@ import { v_flex, h_flex } from "gpui-base";
 import { spaces, agents, panes, run, theme, shared, setShared, window } from "herdr";
 
 const SCOPE = "c-studio-mc.space";
-const OUT = 120;
+const OUT = 180;
 const COLUMNS = [
   ["blocked", "In attesa di te"],
   ["working", "Al lavoro"],
@@ -63,7 +63,7 @@ export default class MissionControl extends View {
 
   render() {
     const stop = (_e, cx) => cx.stop_propagation();
-    const fade = { duration: this.leaving ? OUT : 180, easing: "ease-out" };
+    const fade = { duration: this.leaving ? OUT : 260, easing: "ease-out" };
     const t = theme();
     const scope = shared(SCOPE) ?? null;
     const all = spaces().filter((s) => s.name !== "~" || agents().some((a) => a.space === s.id));

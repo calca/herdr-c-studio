@@ -149,7 +149,7 @@ export default class StudioLaunch extends View {
         cx.notify();
       })
       .opacity(this.shown ? 1 : 0)
-      .transition("opacity", { duration: 200, easing: "ease-out" })
+      .transition("opacity", { duration: 280, easing: "ease-out" })
       .child(v_flex().items_center().gap(6)
         .child(div().text_size(22).font_semibold().text_color(t.foreground).child("New tab"))
         .child(h_flex().gap(6).items_center().text_size(12.5)
