@@ -15,7 +15,7 @@ First public release.
 - **Arrow navigation** – ⌃⌘←/→ for the previous / next tab, ⌃⌘↑/↓ for the previous / next space; no [ ] keys, so they work on Italian and other layouts.
 - **Focus veil** – panes you are not in fade a little.
 - **⌃Tab switcher** – hold ⌃ and press Tab to walk your recent tabs across all spaces, release to go there; a quick ⌃Tab flips back.
-- **Mission Control** – ⌘. or the grid button: every agent as a card on the frosted window, grouped by needs you / working / done / idle, filtered by space; click or ↩ to go there.
+- **Mission Control** – ⌘. or the grid button: every agent as a card on the frosted window (repo · branch, a bar in its status color), grouped by needs you / working / done / idle, filtered by space; click or ↩ to go there.
 - **Palette** – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions; rename, close, move tabs between spaces, resume parked terminals; sort tabs by status, recent use or name.
 - **Launcher** – new tab with a terminal or an installed agent, in a recent folder (⌥1–5) or a new worktree.
 - **Close dialog** – park a running agent instead of closing it.
