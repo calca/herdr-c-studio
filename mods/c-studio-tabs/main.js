@@ -8,6 +8,8 @@ const NARROW_AT = 1400;
 const PANEL_MIN = 1100;
 const SWIPE = 80;
 const MAX_TABS = 4;
+// Fewer tabs in the tray as the window narrows: 4, 3, 2, then just the active one.
+const maxTabs = (w) => w >= 1200 ? MAX_TABS : w >= 1000 ? 3 : w >= 800 ? 2 : 1;
 const RECENT = "c-studio.recent";
 const SWITCH = "c-studio-switch";
 const PANELS = [["files", "F", "Files  ⇧⌘E"], ["changes", "C", "Changes  ⇧⌘G"]];
@@ -177,11 +179,12 @@ export default class Tabs extends View {
       .child(this.mcButton(t))
       .child(div().flex_1())
       .children(this.pills(t));
-    // At most MAX_TABS in the tray, the active one always among them; the rest are in ⌄.
+    // At most max tabs in the tray, the active one always among them; the rest are in ⌄.
+    const max = maxTabs(this.size?.width ?? 1200);
     const tabs = space?.tabs ?? [];
     const at = tabs.findIndex(tab => tab.active);
-    const shown = tabs.length <= MAX_TABS ? tabs
-      : at < MAX_TABS ? tabs.slice(0, MAX_TABS) : [...tabs.slice(0, MAX_TABS - 1), tabs[at]];
+    const shown = tabs.length <= max ? tabs
+      : at < max ? tabs.slice(0, max) : [...tabs.slice(0, max - 1), tabs[at]];
     const more = tabs.length - shown.length;
     const active = shown.findIndex(tab => tab.active);
     const selected = shown[active]?.id;
@@ -237,15 +240,19 @@ export default class Tabs extends View {
     const content = shown.reduce((sum, c) => sum + (widths[c.id] ?? 0) + 4, -4);
     const overflow = more > 0 || content > (this.view ?? Infinity) + 1;
     // Tabs sit centered in one rounded tray; the panel toggles keep to the right.
+    const pills = this.pills(t);
     return h_flex().id("c-studio-tabs").size_full().min_w(0).pt(10).pr(16).pl(lightsPadding).gap(4).items_center()
       .on_size_change((size, cx) => {
         this.autoDock(size);
         this.autoPanel(size);
-        if ((size.width < 900) !== compact || !this.size) { this.size = size; cx.notify(); } else this.size = size;
+        const changed = !this.size || (size.width < 900) !== compact || maxTabs(size.width) !== max;
+        this.size = size;
+        if (changed) cx.notify();
       })
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => this.wheel(e))
-      .child(h_flex().flex_1().min_w(0).items_center().gap(4)
+      // The side groups never shrink below their buttons, so the tray can't slide over them.
+      .child(h_flex().flex_1().min_w(80).items_center().gap(4)
         .child(this.dockToggle(t, false))
         .child(this.mcButton(t)))
       .child(h_flex().id("tab-tray").flex_shrink(1).min_w(0).h(38).gap(4).items_center().rounded(19)
@@ -258,7 +265,7 @@ export default class Tabs extends View {
         .when(more > 0, b => b.w(54).gap(3).child(div().text_size(12.5).child(`${more}`)))
         .child(svg("mods/workspace-chrome/chevron-down.svg").size(more > 0 ? 12 : 14))))
       .child(round(t, "tab-new").text_size(17).on_mouse_down("left", stop).on_click(() => this.newTab()).child("+"))
-      .child(h_flex().flex_1().min_w(0).gap(6).items_center().justify_end().children(this.pills(t)))
+      .child(h_flex().flex_1().min_w(pills.length ? pills.length * 38 + (pills.length - 1) * 6 : 0).gap(6).items_center().justify_end().children(pills))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/c-studio-tabs/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/c-studio-tabs/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/c-studio-tabs/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

@@ -150,7 +150,7 @@ Themes:
   - Tested on Herdr 0.1.18 (`veil` and link line/column need it).
 - **`space.colors` is shared** with Herdr's `spaces` / `picker` mods: write it by merging, and never delete it.
 - **Sizes and counts:**
-  - The tray shows at most 4 tabs.
+  - The tray shows at most 4 tabs: 3 under 1200 px, 2 under 1000, 1 under 800 (`maxTabs` in `c-studio-tabs`).
   - The breakpoints (1500 / 1400 / 1100 px) are in `c-studio-tabs`.
   - The dock is clamped to 220–520 px.
 - **Copilot status:** Copilot CLI reports needs-you only through the hooks. They fire on real permission prompts and `ask_user`, not on `permissionRequest`, which fires for every tool. Other agents rely on Herdr's own detection.
