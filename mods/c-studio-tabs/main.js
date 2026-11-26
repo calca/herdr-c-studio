@@ -1,7 +1,7 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex, ScrollHandle } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, focused, nextCommand, agents } from "herdr";
-import { glass, find, panelShown, showPanel, togglePanel, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon, isPinned, togglePin, keepPinnedFirst } from "./kit.js";
+import { glass, find, panelShown, showPanel, togglePanel, publishViewport, pinDock, tabName, newTerminal, spaceColor, closeTab, programIcon, isPinned, togglePin, keepPinnedFirst } from "./kit.js";
 
 const WIDE_AT = 1500;
 const NARROW_AT = 1400;
@@ -110,6 +110,7 @@ export default class Tabs extends View {
 
   // Shrinking the window under PANEL_MIN folds the side panel away; opening it there stays allowed.
   autoPanel(size) {
+    publishViewport();
     const narrow = size.width < PANEL_MIN;
     if (narrow && this.narrow === false && panelShown()) showPanel(null);
     this.narrow = narrow;
@@ -154,6 +155,7 @@ export default class Tabs extends View {
   }
 
   render() {
+    publishViewport();
     const t = theme();
     const space = spaces().find(p => p.active);
     this.syncPanel(space, PANELS.map(([id]) => id));

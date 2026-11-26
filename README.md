@@ -28,7 +28,7 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - `mods/c-studio-update` – what's new in that release (from CHANGELOG.md); Update pulls the clone you installed from and reruns `install.sh`, Later hides it until the next release
 - `mods/c-studio-switch` – ⌃Tab switcher, like ⌘Tab for apps: hold ⌃ and press Tab (⇧Tab goes back) to walk your recent tabs across all spaces, release ⌃ to go there; a quick ⌃Tab flips to the previous tab, Esc cancels
 - `mods/c-studio-palette` – Spotlight-style ⌘K / ⌘P search for tabs, spaces, agents and actions: fuzzy ("cc" → Claude Code), recent first, tabs sorted by Status, Recent or A–Z (tab switches), ⌘R renames and ⌘⌫ closes the selected tab, "Move tab to …" moves the focused tab to another space (processes keep running); parked terminals are listed too (↵ resumes one as a tab, ⌘⌫ ends it)
-- Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px
+- Files / Changes side panel (Herdr's `files` and `changes` mods): F / C in the tab bar, ⇧⌘E / ⇧⌘G, or click +N −M in the status bar; remembered per space, folds under 1100 px; on a narrow window opening it folds the spaces dock, which comes back when the panel closes
 - `mods/c-studio-close` – × / ⌘W on a tab running more than a shell asks: Park (keep it running in the background), Close, or Cancel; on a pinned tab it asks before closing
 - `mods/c-studio-menu` – right-click on a tab (tab bar or dock): Rename, Pin / Unpin, New tab, Close
 - Pinned tabs: ⌃⌘P, the tab menu or the palette pins a tab; it moves to the front of its space, shows as just its icon in the tab bar and with a pin in the dock, palette and switcher

@@ -28,9 +28,25 @@ export function panelShown() {
   return find(root, "panel-body")?.active ?? null;
 }
 
+// Too narrow for dock, terminal and panel side by side: the dock folds while the
+// panel is open, and comes back when it closes (unless it was moved meanwhile).
+const TERMINAL_MIN = 900, YIELDED = "c-studio.dock-yielded";
+
+function roomForPanel() {
+  const w = shared("c-studio.viewport")?.[0];
+  if (!w) return true;
+  const panel = find(layout(), "panel")?.size?.px ?? 360;
+  return w - 20 - (dockWidth() + 10) - (panel + 10) >= TERMINAL_MIN;
+}
+
 export function showPanel(id) {
-  if (id) { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
-  else run("layout.hide", { id: "panel" });
+  if (id) {
+    if (shared("dock.pinned") === true && !roomForPanel()) { pinDock(false); setShared(YIELDED, true); }
+    run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" });
+  } else {
+    run("layout.hide", { id: "panel" });
+    if (shared(YIELDED)) pinDock(true);
+  }
 }
 
 export function togglePanel(id) {
@@ -38,7 +54,19 @@ export function togglePanel(id) {
   showPanel(panelShown() === id ? null : id);
 }
 
+// The window's size, for what can't measure it (only a render pass may ask).
+export function publishViewport() {
+  let v = null;
+  try { v = globalThis.window?.viewport_size?.(); } catch { return; }
+  if (!v?.width) return false;
+  const now = [Math.round(v.width), Math.round(v.height)], was = shared("c-studio.viewport");
+  if (was?.[0] === now[0] && was?.[1] === now[1]) return false;
+  setShared("c-studio.viewport", now);
+  return true;
+}
+
 export function pinDock(pinned) {
+  setShared(YIELDED, false);
   setShared("dock.pinned", pinned);
   // Folded, the dock column hides so both window edges match.
   run(pinned ? "layout.show" : "layout.hide", { id: "sidebar" });

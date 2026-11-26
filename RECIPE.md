@@ -81,6 +81,7 @@ Themes:
 - **Panel:**
   - Toggled by F / C, ⇧⌘E / ⇧⌘G, or a click on +N −M.
   - Its state is remembered per space, and it folds when the window is narrower than 1100 px.
+  - If dock + panel would leave the terminal under 900 px, opening the panel folds the dock (`c-studio.dock-yielded`); closing the panel pins it again, unless the dock was toggled meanwhile. `c-studio-tabs` publishes the window size (`c-studio.viewport`) from its render pass.
 - **Status bar:** clicking the branch copies it; ↑ pushes, ↓ runs `git pull --ff-only`.
 - **Update notice:** `install.sh` writes `c-studio.json` (`version`, and `source` when installed from a git clone). Every 6 hours `c-studio-status` reads the `v*` tags of that clone (`git fetch --tags`), else GitHub's tags API, and shows ● C-Studio x.y.z when one is newer. The pill opens `c-studio-update`: the CHANGELOG sections since the installed version; Update runs `git pull --ff-only` and `install.sh` (without a clone it opens the release page); Later skips that version.
 - **⌘-click links (`c-studio-links`):** a code file opens in VS Code at the clicked line (`vscode://file/<path>:<line>:<col>`; from Herdr's `link.line`/`link.column`, so `src/app.ts:42:7`; Herdr skips bare filenames like `app.ts:42` and strips `(42,7)`, which then opens at the top); images and PDFs open in Quick Look (`qlmanage -p`, in the background). Remote terminals, URLs and other files pass to Herdr.
