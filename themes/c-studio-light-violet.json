@@ -35,6 +35,7 @@
     "muted": "#6b6963",
     "dim": "#9a978f",
     "canvas": "#f3f2ec8c",
+    "studio-glass": "#f3f2ec5a",
     "background": "#faf9f500",
     "surface": "#faf9f5",
     "border": "#1414131f"

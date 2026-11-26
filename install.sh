@@ -5,12 +5,22 @@ set -euo pipefail
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 
+for panel in files changes; do
+  if [[ ! -r "$DEST/mods/$panel/main.js" ]]; then
+    echo "Open Herdr once to install its built-in $panel mod, then rerun install.sh." >&2
+    exit 1
+  fi
+done
+
 mkdir -p "$DEST/layouts" "$DEST/themes" "$DEST/mods"
 cp "$SRC"/layouts/c-studio.json "$SRC"/layouts/c-studio-mc.json "$DEST/layouts/"
 cp "$SRC"/themes/*.json "$DEST/themes/"
 for m in "$SRC"/mods/*/; do
   name="$(basename "$m")"
   mkdir -p "$DEST/mods/$name"
+  case "$name" in
+    c-studio-files|c-studio-changes) cp "$DEST/mods/${name#c-studio-}/main.js" "$DEST/mods/$name/base.js";;
+  esac
   cp -R "$m". "$DEST/mods/$name/"
 done
 

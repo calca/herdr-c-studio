@@ -26,7 +26,7 @@ Top to bottom:
       - the pane's name (`pane.rename`), else the program; the repo-relative folder and git branch;
       - a spinner while working;
       - split-right, split-down, zoom and close buttons that fade in on hover.
-  - **Side panel (hidden by default, 280–700 px, radius 14, `surface` background like the terminal card, so dim text and buttons stay readable).** A stack of Herdr's `files` and `changes` mods.
+  - **Side panel (hidden by default, 280–700 px, radius 16, no outline).** Thin adapters around Herdr's `files` and `changes` mods remove the inner border; install copies their base views from the user's Herdr installation.
 - **Status bar (36 px).**
   - A monitor icon for this computer (tooltip "This computer"); a remote space shows a server icon and the machine name.
   - Working, needs-you and idle counts.
@@ -98,7 +98,7 @@ Themes:
     - `main` block with `tab: "active"` and a `pane` style plus a header mod;
     - hidden `panel` column with a `panel-body` stack of `files` / `changes`.
   - A floating `dock` copy that draws nothing and only handles ⌘B: Herdr paints a floating block's frame with the solid theme background, so it can't be glass.
-  - Glass: root `window_blur: true`; themes set `colors.background` fully transparent, `canvas` at 55% and a translucent `border`; the dock uses `glass(t)` from `kit.js` (the canvas tint at an alpha that brings the total cover to 65% whatever the canvas alpha). Tabs and the round header buttons (dock toggle, ⌄, +, F, C) share one look: 60% glass, 65% under the pointer, and when selected 65% mixed with the space color. `terminal_opacity: 0` lets the solid, rounded `surface` pane frame show behind terminals (at 1 the terminal paints a square background that leaks out of the rounded corners); it only applies after switching layout away and back.
+  - Glass: root `window_blur: true`, transparent `colors.background`, and `canvas` at 55%. Spaces, the main terminal block, Files/Changes and the Mission Control panel use `studio-glass` (canvas RGB, alpha `5a`) for 90% measured frame opacity. Leave the pane background unset and `terminal_opacity: 0`. Tabs and round header buttons stay at 60% glass, 65% on hover or mixed with the space color when selected.
 - **Layout `layouts/c-studio-mc.json`:** the root look of `c-studio.json` (theme, fonts, `titlebar: "none"`, `window_blur`) around one `c-studio-mc` block. Mission Control is a layout, not an overlay: Herdr has no backdrop blur, so only an empty window lets the frosted glass show; an overlay would show the terminals through it. `layout.switch` opens it and goes back to `c-studio`; the theme picker's accent stays with `c-studio`.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
@@ -135,7 +135,7 @@ Themes:
   - ⌘⇧ + arrows resize the pane.
 
 - **One scale for color and alpha** (keep new UI on it):
-  - Glass: `glass(t, 0.6)` at rest, `0.65` on hover or when active; panels use `glass(t)`.
+  - Glass controls: `glass(t, 0.6)` at rest, `0.65` on hover or when active; panel backgrounds use `studio-glass`.
   - Over glass: hover `foreground + "14"` (8%), selected `"1a"` (10%), wells and segmented controls `"0d"` (5%), borders `"14"`, status tints `<status> + "26"` (15%), drop targets `"33"`.
   - Popovers: `popover` at `"eb"` (92%), border `foreground + "26"`.
   - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.

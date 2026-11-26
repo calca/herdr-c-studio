@@ -258,7 +258,7 @@ export default class StudioDock extends View {
       })
       .relative()
       .when(Boolean(moving && this.pointer), (el) => el.child(this.ghost(t)))
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(glass(t)).rounded(16))
+      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a").rounded(16))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))

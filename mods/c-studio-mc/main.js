@@ -159,7 +159,7 @@ export default class MissionControl extends View {
           .bg(glass(t, 0.6)).text_color(t.muted).hover((h) => h.bg(glass(t, 0.65)).text_color(fg))
           .on_mouse_down("left", stop).on_click((_e, cx) => this.close(cx)).child(svg("mods/workspace-chrome/x.svg").size(15))))
       // The dark panel, like the spaces dock.
-      .child(v_flex().id("mc-panel").flex_1().min_h(0).mt(10).mx(12).mb(12).rounded(16).bg(glass(t))
+      .child(v_flex().id("mc-panel").flex_1().min_h(0).mt(10).mx(12).mb(12).rounded(16).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a")
         .relative().top(still ? 0 : 8).opacity(this.shown ? 1 : 0)
         .transition("opacity", this.leaving ? fade : { duration: 260, easing: "ease-out" })
         .transition("top", { duration: 360, easing: "ease-out" })

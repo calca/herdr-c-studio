@@ -31,7 +31,9 @@ cp "$SRC"/layouts/c-studio.json "$SRC"/layouts/c-studio-mc.json "$DEST/layouts/"
 cp "$SRC"/themes/c-studio-{dark,light}.json "$SRC"/themes/c-studio-{dark,light}-*.json "$DEST/themes/"
 for m in "$SRC"/mods/c-studio-*/; do
   name="$(basename "$m")"
-  rsync -a --delete --exclude gpui-kit.d.ts "$m" "$DEST/mods/$name/"
+  excludes=(--exclude gpui-kit.d.ts)
+  case "$name" in c-studio-files|c-studio-changes) excludes+=(--exclude /base.js);; esac
+  rsync -a --delete "${excludes[@]}" "$m" "$DEST/mods/$name/"
 done
 
 python3 - "$SRC/keys.json" "$DEST/keys.c-studio.json" <<'PY'

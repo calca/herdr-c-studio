@@ -20,6 +20,8 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 
 ## Contents
 
+Spaces, terminals, Files/Changes and the central Mission Control panel use the same frosted background at 90% opacity. The tab tray and its buttons keep their lighter glass.
+
 - `layouts/c-studio.json` – the layout
 - `layouts/c-studio-mc.json` + `mods/c-studio-mc` – Mission Control (⌘., the grid button in the tab bar, or the palette): a layout of its own, so the dock and terminals step aside and the window glass shows; every agent as a card (icon, title, repo · branch, space, a bar in its status color), newest first, in sections needs you / working / done / idle (click the idle header or press i to fold them), in a dark panel like the dock; drag the window by the header; filter by space with the round pills or Tab, arrows + ↩ or a click go to the agent, Esc, ⌘. or a click on the title go back (it fades out quietly)
 - `mods/c-studio-dock` – spaces dock with all tabs (pin or fold with ⌘B or the layers button in the tab bar; drag its edge to resize it (220–520 px, remembered), narrow to fold it, auto-pins when the window is ≥1500 px, folds below 1400 px; click the active space to collapse its tabs (a collapsed space shows how many agents are working or done); spaces in their colors (right-click a space to pick one or rename it), program icons in one color, drag to reorder tabs (a light copy of the tab follows the pointer and a slot opens where it will land) or drop one on another space to move it ("Sposta qui"), × on hover)

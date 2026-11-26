@@ -6,23 +6,7 @@
 
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { panes, props, run, theme, home, layout, exec, spaces } from "herdr";
-
-// Match the first visible tab frame, including the active child of a stack.
-function paneFrame(node) {
-  if (!node || node.hidden) return null;
-  if (node.content?.tab && node.content.pane) return node.content.pane;
-  let children = node.children ?? [];
-  if (node.type === "stack") {
-    const visible = children.filter(child => !child.hidden);
-    children = [visible.find(child => child.id === node.active) ?? visible[0]];
-  }
-  for (const child of children) {
-    const frame = paneFrame(child);
-    if (frame) return frame;
-  }
-  return null;
-}
+import { panes, props, run, theme, home, exec, spaces } from "herdr";
 
 function icon(p, size, color) {
   if (!p?.icon) return null;
@@ -60,13 +44,18 @@ export default class Pane extends View {
       .id(id)
       .p(3)
       .rounded(4)
-      .text_color(t.dim)
-      .hover((s) => s.bg(t.hover).text_color(t.foreground))
+      .hover((s) => s.bg(t.foreground + "14"))
+      .on_hover((over, cx) => {
+        if (over) this.hoveredButton = id;
+        else if (this.hoveredButton === id) this.hoveredButton = null;
+        cx.notify();
+      })
       .on_click((_e, cx) => {
         cx.stop_propagation();
         run(command, args);
       })
-      .child(svg(`mods/c-studio-pane/${icon}.svg`).size(16));
+      .child(svg(`mods/c-studio-pane/${icon}.svg`).size(16)
+        .text_color(this.hoveredButton === id ? t.foreground : t.muted));
   }
 
   root(cwd, machine, cx) {
@@ -93,7 +82,6 @@ export default class Pane extends View {
     const pic = icon(p.program, 16, t.dim);
     const st = p.status;
     const pane = p.pane;
-    const bottom = paneFrame(layout())?.header?.position === "bottom";
     const grip = p.movable !== false && !p.zoomed && panes().filter((q) => q.tab === p.tab).length > 1;
     const others = p.zoomed ? panes().filter((q) => q.tab === p.tab && q.pane !== pane) : [];
     return h_flex()
@@ -102,9 +90,6 @@ export default class Pane extends View {
       .px(10)
       .gap(8)
       .items_center()
-      .when(bottom, el => el.border_t(1))
-      .when(!bottom, el => el.border_b(1))
-      .border_color(t.border)
       .text_size(13.5)
       .on_hover((hovered, cx) => { this.hovered = hovered; cx.notify(); })
       .on_click(() => run("pane.focus", { pane }))

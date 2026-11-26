@@ -42,6 +42,8 @@
         {
           "id": "main",
           "type": "block",
+          "background": "studio-glass",
+          "radius": 14,
           "content": {
             "tab": "active",
             "pane": {
@@ -64,8 +66,7 @@
               "radius": 14,
               "gap": 10,
               "lone": true,
-              "veil": 0.35,
-              "background": "surface"
+              "veil": 0.35
             }
           }
         },
@@ -81,14 +82,14 @@
                   "id": "files",
                   "type": "block",
                   "content": {
-                    "mod": "files"
+                    "mod": "c-studio-files"
                   }
                 },
                 {
                   "id": "changes",
                   "type": "block",
                   "content": {
-                    "mod": "changes"
+                    "mod": "c-studio-changes"
                   }
                 }
               ],
@@ -101,12 +102,8 @@
           "min": 280,
           "max": 700,
           "hidden": true,
-          "background": "surface",
-          "border": {
-            "width": 1,
-            "color": "border"
-          },
-          "radius": 14
+          "background": "studio-glass",
+          "radius": 16
         }
       ],
       "padding": [
