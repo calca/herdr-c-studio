@@ -23,9 +23,10 @@ function glass(t, cover = 0.65) {
 // The icon already says which agent it is.
 const title = (a) => (a.pane_name || a.title || a.tab_name).replace(/\s+[-–—]\s+(GitHub Copilot|Claude Code|Codex|Gemini)$/i, "");
 
+// As kit.js programIcon(): SVGs are drawn in one color, as in the Spaces dock; only pictures keep theirs.
 function icon(p, size, color) {
   if (!p?.icon) return div().w(size).h(size).flex_none();
-  return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
+  return p.tint || /\.svg$/i.test(p.icon) ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
 export default class MissionControl extends View {
@@ -90,17 +91,17 @@ export default class MissionControl extends View {
 
     const card = (a) => {
       const on = a === sel;
-      const color = t[a.status] ?? t.dim;
       const name = title(a);
+      // Grey at rest, bright when selected; the bar on the left tells the status.
       return h_flex().id(`mc-${a.pane}`).w(300).h(68).flex_none().pr(12).gap(12).rounded(12).overflow_hidden().cursor_pointer()
         .bg(on ? fg + "0d" : "#00000018").border(1).border_color(on ? fg + "0d" : fg + "14")
-        .hover((s) => s.bg(fg + "0d"))
+        .hover((s) => s.bg(fg + "14"))
         .on_mouse_down("left", stop).on_click((_e, cx) => this.go(a, cx))
-        .child(div().ml(8).w(3).h(40).rounded(2).flex_none().bg(color))
+        .child(div().ml(8).w(3).h(40).rounded(2).flex_none().bg(t[a.status] ?? t.dim))
         .child(v_flex().flex_1().min_w(0).gap(6)
           .child(h_flex().gap(9).items_center()
-            .child(icon(a.program, 17, t.muted))
-            .child(div().flex_1().truncate().text_size(14).font_medium().text_color(fg).child(name)))
+            .child(icon(a.program, 17, on ? fg : t.muted))
+            .child(div().flex_1().truncate().text_size(14).font_medium().when(on, (d) => d.font_semibold()).text_color(on ? fg : t.muted).child(name)))
           .child(h_flex().gap(8).items_center().text_size(11.5).text_color(t.muted)
             .child(div().flex_1().truncate().child(where(a)))
             .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ vai" : scope ? "" : a.space_name))));
