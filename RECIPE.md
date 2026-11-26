@@ -26,7 +26,7 @@ Top to bottom:
       - the pane's name (`pane.rename`), else the program; the repo-relative folder and git branch;
       - a spinner while working;
       - split-right, split-down, zoom and close buttons that fade in on hover.
-  - **Side panel (hidden by default, 280–700 px, radius 14).** A stack of Herdr's `files` and `changes` mods.
+  - **Side panel (hidden by default, 280–700 px, radius 14, `surface` background like the terminal card, so dim text and buttons stay readable).** A stack of Herdr's `files` and `changes` mods.
 - **Status bar (36 px).**
   - A monitor icon for this computer (tooltip "This computer"); a remote space shows a server icon and the machine name.
   - Working, needs-you and idle counts.

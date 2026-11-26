@@ -101,7 +101,7 @@
           "min": 280,
           "max": 700,
           "hidden": true,
-          "background": "background",
+          "background": "surface",
           "border": {
             "width": 1,
             "color": "border"
