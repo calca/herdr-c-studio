@@ -117,10 +117,18 @@ export default class StudioDock extends View {
     if (this.docked !== pinned) { this.wasShown = false; return div(); }
     // Herdr paints a floating block's frame solid, so the folded dock shows nothing: spaces switch with ⌃1–9, ⌘K or ⌘B.
     if (!this.docked) return div();
-    if (this.docked && !this.wasShown) {
+    if (!this.wasShown) {
+      const returned = shared("c-studio.mc-return");
+      this.returning = Boolean(returned && returned !== this.lastReturn && Date.now() - returned < 2000);
+      this.lastReturn = returned;
       this.wasShown = true;
       this.faded = true;
-      cx.timer.after(30, (c) => { this.faded = false; c.notify(); });
+      const token = this.reveal = {};
+      cx.timer.after(30, (c) => {
+        if (this.reveal !== token || !this.wasShown) return;
+        this.faded = false;
+        c.notify();
+      });
     }
     const open = this.docked || (placement()?.hovered ?? false);
     // A tab press becomes a move once the pointer leaves that tab.
@@ -258,7 +266,8 @@ export default class StudioDock extends View {
       })
       .relative()
       .when(Boolean(moving && this.pointer), (el) => el.child(this.ghost(t)))
-      .when(this.docked, (el) => el.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" }).h_full().min_h(0).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a").rounded(16))
+      .when(this.docked, (el) => el.h_full().min_h(0).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a").rounded(16)
+        .when(!this.returning, (d) => d.opacity(this.faded ? 0 : 1).transition("opacity", { duration: 200, easing: "ease-out" })))
       .child(
         h_flex().id("dock-head").flex_none().h(30).px(8).items_center().gap(10)
           .child(div().w(30).flex_none().flex().justify_center().child(svg("mods/workspace-chrome/layers.svg").size(15).text_color(t.muted)))
@@ -266,6 +275,7 @@ export default class StudioDock extends View {
           .when(blockedTotal > 0, (el) => el.child(div().flex_none().px(6).h(16).flex().items_center().rounded(8).bg(t.blocked + "26").text_size(10).font_semibold().text_color(t.blocked).child(`${blockedTotal}`))))
       // Only the spaces scroll; the head and "New space" stay in view.
       .child(v_flex().id("dock-list").gap(6).when(this.docked, (el) => el.flex_1().min_h(0).overflow_y_scroll())
+        .when(this.returning, (el) => el.opacity(this.faded ? 0.85 : 1).transition("opacity", { duration: 160, easing: "ease-out" }))
         .children(all.map((s, i) => row(s, i).flex_none())))
       // Closed, only the icon column peeks out: keep the line under the icons.
       .child(div().flex_none().h(1).my(2).bg(t.border).when(open, (d) => d.mx(8)).when(!open, (d) => d.w(30).ml(8)))

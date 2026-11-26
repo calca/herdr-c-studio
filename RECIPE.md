@@ -102,7 +102,7 @@ Themes:
 - **Layout `layouts/c-studio-mc.json`:** the root look of `c-studio.json` (theme, fonts, `titlebar: "none"`, `window_blur`) around one `c-studio-mc` block. Mission Control is a layout, not an overlay: Herdr has no backdrop blur, so only an empty window lets the frosted glass show; an overlay would show the terminals through it. `layout.switch` opens it and goes back to `c-studio`; the theme picker's accent stays with `c-studio`.
 - **Mods:**
   - `c-studio-dock`, `c-studio-tabs`, `c-studio-pane` (a clone of `pane`), `c-studio-status` (a clone of `workspace-status`), `c-studio-toast` (a clone of `toast`);
-  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-menu` (popup, 200 wide), `c-studio-launch` (focusable view), `c-studio-mc` (Mission Control, a layout block: cards fade and slide in, staggered), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
+  - `c-studio-palette` (popup overlay, 620 wide, at top + 110), `c-studio-switch` (popup overlay, 520 wide, at top + 150), `c-studio-close` (dialog), `c-studio-menu` (popup, 200 wide), `c-studio-launch` (focusable view), `c-studio-mc` (Mission Control, a layout block: cards fade in together), `c-studio-links` (no view: `link.js` exports `handleLink`; `mod.json` `link_handlers` rules match image/PDF and code-file paths).
   - `kit.js` holds the shared helpers: panel toggling, tab names, dock pinning, move tab, pinned tabs, space colors, program icons. It is identical in dock, tabs, status, palette, close, switch and menu, because imports only resolve inside a mod's folder.
 - **Shipped mods used:**
   - `files`, `changes` and `worktree`;
@@ -141,7 +141,7 @@ Themes:
   - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.
   - Mission Control cards are inset (`#00000018`, the panel darkened); hover and selection lift them to `foreground + "0d"`.
 
-- **Quiet motion:** fades are 200 ms `ease-out`; Mission Control rises 8 px (cards 4 px, 12 ms apart) on the way in and only fades on the way out; spinners turn once in 1.2 s.
+- **Quiet motion:** most fades are 200 ms `ease-out`. Mission Control content fades in together over 180 ms and out over 120 ms; the glass stays still. On return to an open Spaces dock, only its rows fade from 85% to full opacity over 160 ms. Spinners turn once in 1.2 s.
 
 ## Watch out
 

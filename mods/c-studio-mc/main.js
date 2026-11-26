@@ -6,7 +6,7 @@ import { v_flex, h_flex } from "gpui-base";
 import { spaces, agents, panes, run, theme, shared, setShared, window } from "herdr";
 
 const SCOPE = "c-studio-mc.space";
-const OUT = 200;
+const OUT = 120;
 const COLUMNS = [
   ["blocked", "In attesa di te"],
   ["working", "Al lavoro"],
@@ -37,17 +37,21 @@ export default class MissionControl extends View {
     this.shown = false;
     this.leaving = false;
     this.idleOpen = true;
-    cx.timer.after(30, (c) => { this.shown = true; c.notify(); });
+    cx.timer.after(30, (c) => { if (!this.leaving) { this.shown = true; c.notify(); } });
   }
 
-  // Fade and sink out, then hand the window back to c-studio.
+  // Let the content fade before switching layouts.
   close(cx) {
     if (this.leaving) return;
     this.leaving = true;
     this.shown = false;
-    if (!cx) return run("layout.switch", { name: "c-studio" });
+    const back = () => {
+      if (shared("dock.pinned") === true) setShared("c-studio.mc-return", Date.now());
+      run("layout.switch", { name: "c-studio" });
+    };
+    if (!cx) return back();
     cx.notify();
-    cx.timer.after(OUT, () => run("layout.switch", { name: "c-studio" }));
+    cx.timer.after(OUT, back);
   }
 
   go(a, cx) {
@@ -59,9 +63,7 @@ export default class MissionControl extends View {
 
   render() {
     const stop = (_e, cx) => cx.stop_propagation();
-    const fade = { duration: OUT, easing: "ease-out" };
-    // Leaving only fades: nothing moves on the way out.
-    const still = this.shown || this.leaving;
+    const fade = { duration: this.leaving ? OUT : 180, easing: "ease-out" };
     const t = theme();
     const scope = shared(SCOPE) ?? null;
     const all = spaces().filter((s) => s.name !== "~" || agents().some((a) => a.space === s.id));
@@ -85,15 +87,12 @@ export default class MissionControl extends View {
     const mark = (st, size) => st === "working"
       ? svg("mods/workspace-chrome/spinner.svg").size(size + 4).flex_none().text_color(t.working).spin(1200)
       : div().size(size).rounded(size / 2).flex_none().bg(t[st] ?? t.dim);
-    const enter = (el, i) => el.relative().top(still ? 0 : 4).opacity(this.shown ? 1 : 0)
-      .transition("opacity", this.leaving ? fade : { duration: 300, delay: Math.min(i, 12) * 12, easing: "ease-out" })
-      .transition("top", { duration: 360, delay: Math.min(i, 12) * 12, easing: "ease-out" });
 
     const card = (a) => {
       const on = a === sel;
       const color = t[a.status] ?? t.dim;
       const name = title(a);
-      return enter(h_flex().id(`mc-${a.pane}`).w(300).h(68).flex_none().pr(12).gap(12).rounded(12).overflow_hidden().cursor_pointer()
+      return h_flex().id(`mc-${a.pane}`).w(300).h(68).flex_none().pr(12).gap(12).rounded(12).overflow_hidden().cursor_pointer()
         .bg(on ? fg + "0d" : "#00000018").border(1).border_color(on ? fg + "0d" : fg + "14")
         .hover((s) => s.bg(fg + "0d"))
         .on_mouse_down("left", stop).on_click((_e, cx) => this.go(a, cx))
@@ -104,7 +103,7 @@ export default class MissionControl extends View {
             .child(div().flex_1().truncate().text_size(14).font_medium().text_color(fg).child(name)))
           .child(h_flex().gap(8).items_center().text_size(11.5).text_color(t.muted)
             .child(div().flex_1().truncate().child(where(a)))
-            .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ vai" : scope ? "" : a.space_name)))), ordered.indexOf(a));
+            .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ vai" : scope ? "" : a.space_name))));
     };
 
     const section = ([st, label], i) => {
@@ -150,7 +149,7 @@ export default class MissionControl extends View {
         cx.notify();
       })
       .child(h_flex().h(58).flex_none().pt(10).pl(lights).pr(16).gap(16).items_center()
-        .opacity(this.shown ? 1 : 0).transition("opacity", this.leaving ? fade : { duration: 260, easing: "ease-out" })
+        .opacity(this.shown ? 1 : 0).transition("opacity", fade)
         .child(div().id("mc-title").text_size(16).font_semibold().text_color(fg).cursor_pointer().hover((h) => h.opacity(0.85))
           .on_mouse_down("left", stop).on_click((_e, cx) => this.close(cx)).child("Mission Control"))
         .child(div().flex_1())
@@ -160,13 +159,12 @@ export default class MissionControl extends View {
           .on_mouse_down("left", stop).on_click((_e, cx) => this.close(cx)).child(svg("mods/workspace-chrome/x.svg").size(15))))
       // The dark panel, like the spaces dock.
       .child(v_flex().id("mc-panel").flex_1().min_h(0).mt(10).mx(12).mb(12).rounded(16).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a")
-        .relative().top(still ? 0 : 8).opacity(this.shown ? 1 : 0)
-        .transition("opacity", this.leaving ? fade : { duration: 260, easing: "ease-out" })
-        .transition("top", { duration: 360, easing: "ease-out" })
         .child(v_flex().id("mc-body").flex_1().min_h(0).overflow_y_scroll().px(20).py(18).gap(24)
+          .opacity(this.shown ? 1 : 0).transition("opacity", fade)
           .children([...COLUMNS, ["idle", "Inattivi"]].map(section).filter(Boolean))
           .when(!list.length, (el) => el.child(div().text_color(t.muted).child("Nessun agente"))))
         .child(h_flex().h(36).flex_none().px(20).items_center().gap(16).text_size(11.5).text_color(t.muted).border_t(1).border_color(fg + "14")
+          .opacity(this.shown ? 1 : 0).transition("opacity", fade)
           .child("↩ vai").child("frecce scegli").child("tab space").child("i inattivi").child("esc chiudi")));
   }
 }
