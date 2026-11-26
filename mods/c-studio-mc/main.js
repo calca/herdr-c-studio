@@ -105,7 +105,7 @@ export default class MissionControl extends View {
           .child(mark(st, 8))
           .child(div().text_size(12).font_semibold().text_color(st === "idle" ? t.muted : fg).child(label.toUpperCase()))
           .child(div().text_size(12).font_semibold().text_color(st === "idle" ? t.dim : t[st]).child(String(mine.length)))
-          .when(st === "idle", (el) => el.child(div().text_size(12).text_color(t.dim).child(folded ? "›" : "⌄"))))
+          .when(st === "idle", (el) => el.child(svg(`mods/workspace-chrome/chevron-${folded ? "right" : "down"}.svg`).size(12).flex_none().text_color(t.dim))))
         .when(!folded, (el) => el.child(h_flex().flex_wrap().gap(12).children(mine.map(card))));
     };
 
