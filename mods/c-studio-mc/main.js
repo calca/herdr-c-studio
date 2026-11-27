@@ -8,9 +8,9 @@ import { spaces, agents, panes, run, theme, shared, setShared, window } from "he
 const SCOPE = "c-studio-mc.space";
 const OUT = 180;
 const COLUMNS = [
-  ["blocked", "In attesa di te"],
-  ["working", "Al lavoro"],
-  ["done", "Finiti"],
+  ["blocked", "Needs you"],
+  ["working", "Working"],
+  ["done", "Done"],
 ];
 
 // As kit.js glass(): the dock's frosted fill.
@@ -107,7 +107,7 @@ export default class MissionControl extends View {
             .child(div().flex_1().truncate().text_size(14).font_medium().when(on, (d) => d.font_semibold()).text_color(on ? fg : t.muted).child(name)))
           .child(h_flex().gap(8).items_center().text_size(11.5).text_color(t.muted)
             .child(div().flex_1().truncate().child(where(a)))
-            .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ vai" : scope ? "" : a.space_name))));
+            .child(div().flex_none().text_color(on ? t.muted : t.dim).child(on ? "↩ go" : scope ? "" : a.space_name))));
     };
 
     const section = ([st, label], i) => {
@@ -132,7 +132,7 @@ export default class MissionControl extends View {
         .when(on, (d) => d.font_medium())
         .hover((h) => h.bg(glass(t, 0.65)).text_color(fg))
         .on_mouse_down("left", stop).on_click((_e, cx) => { setShared(SCOPE, s?.id ?? null); this.at = 0; cx.notify(); })
-        .child(s ? s.name : "Tutti");
+        .child(s ? s.name : "All");
     };
 
     return v_flex().id("c-studio-mc").track_focus(this.handle).size_full()
@@ -165,10 +165,10 @@ export default class MissionControl extends View {
       .child(v_flex().id("mc-panel").flex_1().min_h(0).mt(10).mx(12).mb(12).rounded(16).bg(t["studio-glass"] ?? t.canvas.slice(0, 7) + "5a")
         .child(v_flex().id("mc-body").flex_1().min_h(0).overflow_y_scroll().px(20).py(18).gap(24)
           .opacity(this.shown ? 1 : 0).transition("opacity", fade)
-          .children([...COLUMNS, ["idle", "Inattivi"]].map(section).filter(Boolean))
+          .children([...COLUMNS, ["idle", "Idle"]].map(section).filter(Boolean))
           .when(!list.length, (el) => el.child(div().text_color(t.muted).child("Nessun agente"))))
         .child(h_flex().h(36).flex_none().px(20).items_center().gap(16).text_size(11.5).text_color(t.muted).border_t(1).border_color(fg + "14")
           .opacity(this.shown ? 1 : 0).transition("opacity", fade)
-          .child("↩ vai").child("frecce scegli").child("tab space").child("i inattivi").child("esc chiudi")));
+          .child("↩ go").child("arrows choose").child("tab space").child("i idle").child("esc close")));
   }
 }

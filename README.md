@@ -14,9 +14,11 @@ A layout for your coding agents that feels at home on a Mac. Everything you don'
 - **Mission Control.** ⌘. (or the grid button beside the layers button) shows every agent as a card on the frosted window, grouped by what it needs from you.
 - **Nothing gets lost.** Park a running agent instead of closing it, move tabs between spaces, find anything with ⌘K.
 
-| Tab tray, dark | Dock pinned, light | Tab tray, light |
-|---|---|---|
-| ![Tab tray, dark](docs/tabs-dark.png) | ![Dock pinned, light](docs/dock-light.png) | ![Tab tray, light](docs/tabs-light.png) |
+| Tab tray, dark | Mission Control |
+|---|---|
+| ![Tab tray, dark](docs/tabs-dark.png) | ![Mission Control, dark](docs/mission-control.png) |
+| **Dock pinned, light** | **Tab tray, light** |
+| ![Dock pinned, light](docs/dock-light.png) | ![Tab tray, light](docs/tabs-light.png) |
 
 ## Contents
 
