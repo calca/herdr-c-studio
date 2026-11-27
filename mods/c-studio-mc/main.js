@@ -17,7 +17,10 @@ const COLUMNS = [
 function glass(t, cover = 0.65) {
   const under = parseInt(t.canvas.slice(7, 9) || "ff", 16) / 255;
   const a = under >= 1 ? 0 : Math.max(0, 1 - (1 - cover) / (1 - under));
-  return t.canvas.slice(0, 7) + Math.round(a * 255).toString(16).padStart(2, "0");
+  const hex = (x) => Math.round(x * 255).toString(16).padStart(2, "0");
+  // A near-solid canvas (light theme) leaves nothing to add: lift controls with a light pill instead.
+  if (a < 0.05) return (t.popover ?? "#ffffff").slice(0, 7) + hex(cover - 0.05);
+  return t.canvas.slice(0, 7) + hex(a);
 }
 
 // The icon already says which agent it is.

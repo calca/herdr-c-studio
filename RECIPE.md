@@ -135,7 +135,7 @@ Themes:
   - ⌘⇧ + arrows resize the pane.
 
 - **One scale for color and alpha** (keep new UI on it):
-  - Glass controls: `glass(t, 0.6)` at rest, `0.65` on hover or when active; panel backgrounds use `studio-glass`.
+  - Glass controls: `glass(t, 0.6)` at rest, `0.65` on hover or when active; panel backgrounds use `studio-glass`. When the canvas is already more solid than that (light theme), `glass()` returns a light `popover` pill instead of nothing.
   - Over glass: hover `foreground + "14"` (8%), selected `"1a"` (10%), wells and segmented controls `"0d"` (5%), borders `"14"`, status tints `<status> + "26"` (15%), drop targets `"33"`.
   - Popovers: `popover` at `"eb"` (92%), border `foreground + "26"`.
   - Text: `foreground`, then `muted`, then `dim`; directly on the window glass (status bar) secondary text is `foreground + "c0"`, because `muted` sinks into the desktop.
