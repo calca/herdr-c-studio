@@ -34,7 +34,7 @@ Guidance for coding agents working on C-Studio, a calm, macOS-style layout for
     `base.js` is excluded from the repo; `install.sh` creates it from the installed Herdr.
 - **Themes:** edit only `c-studio-dark.json` / `c-studio-light.json`. `sync.sh` regenerates the
   six accent variants of each from them; new colors (like `studio-glass`) go in the base themes.
-- **Glass:** panels use the theme color `studio-glass` (90% frame opacity); terminals use
+- **Glass:** panels use the theme color `studio-glass` (90% frame opacity; the light theme is more opaque, or it goes grey over a dark desktop); terminals use
   `terminal_opacity: 0` with no pane background. Don't put a background back on panes.
 - **Motion:** quiet and consistent — fades 280 ms `ease-out`, Mission Control 260 ms in /
   180 ms out, opacity only (no sliding). Transitions work only on opacity, width, height, left

@@ -22,6 +22,6 @@ First public release.
 - **Update notice** – the status bar tells you when a new C-Studio release is out; one click shows what's new and installs it.
 - **Pane header and status bar** – folder, branch, ahead/behind with push and pull, quiet notifications.
 - **Glass window** – Spaces, terminals, Files/Changes and the Mission Control panel share 90% opacity. Files/Changes have the same borderless corners as Spaces; the terminal header has no divider and its controls brighten on hover.
-- **Themes** – warm light and dark palettes; the focus border follows the space color.
+- **Themes** – warm light and dark palettes (the light one with a more solid glass, so it stays cream over a dark desktop); the focus border follows the space color.
 - **Copilot CLI hooks** – report needs you only for a real permission prompt or a question to you.
 - `install.sh` and `uninstall.sh`.
