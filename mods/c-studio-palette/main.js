@@ -107,13 +107,13 @@ export default class StudioPalette extends View {
       kind: "action", key: `move:${w.id}`, label: `Move tab to ${w.name}`, sub: "Space", icon: "→", go: () => setShared("c-studio.move", { tab: f.tab, space: w.id }),
     })) : [];
     if (sort === "az") spaceItems.sort(az);
-    // Parked: still running, but Herdr took its pane and its space/tab labels away.
+    // Parked: still running but in no pane. Herdr keeps its old space/tab labels, so don't rely on them.
     const shown = new Set(all.map((p) => p.terminal));
     const parked = terminals().filter((x) => x.state === "live" && !x.parent && x.labels && "herdr.seen" in x.labels
-      && !x.labels["herdr.space"] && !shown.has(x.address)).map((x) => ({
+      && !shown.has(x.address)).map((x) => ({
       kind: "parked", key: `parked:${x.address}`, id: x.address, status: x.status,
       label: x.name || x.program?.name || x.foreground?.name || x.address,
-      sub: `Parked · ${(x.cwd ?? "").split("/").pop() || "~"}`,
+      sub: `Parked · ${spaces().find((w) => w.id === x.labels["herdr.space"])?.name ?? ((x.cwd ?? "").split("/").pop() || "~")}`,
       go: () => run("terminal.keep", { terminal: x.address }),
     }));
     const known = (shared("new-menu.agents") ?? {})[""] ?? [];
